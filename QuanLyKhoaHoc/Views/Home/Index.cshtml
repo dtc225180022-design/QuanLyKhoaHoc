@@ -1,0 +1,497 @@
+@{
+    ViewData["Title"] = "Trang chủ";
+    var khoaHocMo = ViewBag.KhoaHocMo as List<QuanLyKhoaHoc.Models.KhoaHoc> ?? new();
+}
+
+<!-- Hero -->
+<section class="hero-section text-white py-5">
+    <div class="container py-4">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill">
+                    <i class="bi bi-star-fill me-1"></i>Trung tâm ngoại ngữ hàng đầu Việt Nam
+                </div>
+                <h1 class="display-4 fw-bold mb-3">Mở cánh cửa thế giới với ngoại ngữ</h1>
+                <p class="lead mb-4 text-white-50">Học cùng đội ngũ giảng viên chuyên nghiệp, lộ trình cá nhân hóa với AI, linh hoạt học offline & online.</p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="/KhoaHoc" class="btn btn-warning btn-lg fw-semibold shadow">
+                        <i class="bi bi-search me-2"></i>Khám phá khóa học
+                    </a>
+                    <a href="/Auth/DangKy" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-person-plus me-2"></i>Đăng ký học
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-flex justify-content-center">
+                <div class="position-relative">
+                    <div class="bg-white bg-opacity-10 rounded-4 p-4 text-center" style="width:280px">
+                        <div class="display-1 mb-2">🎓</div>
+                        <div class="fw-bold fs-5">Học viên xuất sắc</div>
+                        <div class="text-white-50 small">Cộng đồng học tập năng động</div>
+                        <div class="d-flex justify-content-center gap-2 mt-3">
+                            <span class="badge bg-warning text-dark">🇬🇧 Tiếng Anh</span>
+                            <span class="badge bg-danger">🇯🇵 Tiếng Nhật</span>
+                        </div>
+                        <div class="d-flex justify-content-center gap-2 mt-2">
+                            <span class="badge bg-warning text-dark">🇰🇷 Tiếng Hàn</span>
+                            <span class="badge bg-success">🇨🇳 Tiếng Trung</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Banner Carousel -->
+<section id="bannerSection" style="display:none">
+    <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4500">
+        <div class="carousel-indicators" id="carouselIndicators"></div>
+        <div class="carousel-inner" id="carouselInner"></div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    </div>
+</section>
+
+<!-- Cam kết -->
+<section class="bg-white py-5 shadow-sm">
+    <div class="container">
+        <div class="row text-center g-4">
+            <div class="col-6 col-md-3">
+                <div class="mb-3">
+                    <div class="mx-auto d-flex align-items-center justify-content-center rounded-circle bg-warning bg-opacity-10" style="width:72px;height:72px">
+                        <i class="bi bi-trophy-fill text-warning" style="font-size:2rem"></i>
+                    </div>
+                </div>
+                <h6 class="fw-bold mb-1">Cam kết đầu ra</h6>
+                <p class="text-muted small mb-0">Hoàn tiền nếu không đạt mục tiêu đã cam kết</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="mb-3">
+                    <div class="mx-auto d-flex align-items-center justify-content-center rounded-circle bg-primary bg-opacity-10" style="width:72px;height:72px">
+                        <i class="bi bi-person-badge-fill text-primary" style="font-size:2rem"></i>
+                    </div>
+                </div>
+                <h6 class="fw-bold mb-1">Giáo viên chuyên nghiệp</h6>
+                <p class="text-muted small mb-0">100% thạc sĩ, kinh nghiệm thực tế tại nước ngoài</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="mb-3">
+                    <div class="mx-auto d-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10" style="width:72px;height:72px">
+                        <i class="bi bi-camera-video-fill text-success" style="font-size:2rem"></i>
+                    </div>
+                </div>
+                <h6 class="fw-bold mb-1">Học Online &amp; Offline</h6>
+                <p class="text-muted small mb-0">Linh hoạt học tại cơ sở hoặc qua Google Meet</p>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="mb-3">
+                    <div class="mx-auto d-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10" style="width:72px;height:72px">
+                        <i class="bi bi-headset text-danger" style="font-size:2rem"></i>
+                    </div>
+                </div>
+                <h6 class="fw-bold mb-1">Hỗ trợ 24/7</h6>
+                <p class="text-muted small mb-0">Đội ngũ luôn sẵn sàng giải đáp mọi thắc mắc</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI Gợi ý khóa học (form cho khách + kết quả cho người đăng nhập) -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <!-- Form AI cho khách/người chưa có gợi ý cá nhân -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm" style="background:linear-gradient(135deg,#0d6efd08,#0dcaf008)">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <div class="stat-icon bg-primary bg-opacity-10" style="width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center">
+                                <i class="bi bi-robot text-primary fs-3"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-0 fw-bold">AI Gợi Ý Khóa Học</h4>
+                                <p class="text-muted mb-0 small">Nhập thông tin để nhận gợi ý phù hợp nhất</p>
+                            </div>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Trình độ hiện tại</label>
+                                <select id="aiTrinhDo" class="form-select">
+                                    <option value="">Chọn trình độ</option>
+                                    <option value="Căn bản">Mới bắt đầu (A1-A2)</option>
+                                    <option value="Trung cấp">Sơ trung cấp (B1)</option>
+                                    <option value="Nâng cao">Trung cao cấp (B2-C1)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold">Ngôn ngữ muốn học</label>
+                                <select id="aiNgonNgu" class="form-select">
+                                    <option value="">Tất cả</option>
+                                    <option value="Tiếng Anh">🇬🇧 Tiếng Anh</option>
+                                    <option value="Tiếng Nhật">🇯🇵 Tiếng Nhật</option>
+                                    <option value="Tiếng Hàn">🇰🇷 Tiếng Hàn</option>
+                                    <option value="Tiếng Trung">🇨🇳 Tiếng Trung</option>
+                                    <option value="Tiếng Pháp">🇫🇷 Tiếng Pháp</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button class="btn btn-primary w-100 fw-semibold" onclick="goiYAI()">
+                                    <i class="bi bi-stars me-2"></i>Gợi ý cho tôi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kết quả AI -->
+        <div id="aiResultSection" style="display:none">
+            <h5 class="fw-bold mb-3 text-center"><i class="bi bi-stars text-warning me-2"></i>Khóa học gợi ý cho bạn</h5>
+            <div class="row g-3" id="aiCards"></div>
+        </div>
+
+        <!-- Gợi ý cá nhân (khi đã đăng nhập) -->
+        <div id="sectionGoiYCaNhan" style="display:none">
+            <h5 class="fw-bold mb-3"><i class="bi bi-person-check text-primary me-2"></i>Gợi ý dựa trên hồ sơ của bạn</h5>
+            <div class="row g-3" id="goiYCaNhanCards"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Tại sao chọn EduCenter -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Tại sao chọn <span class="text-primary">EduCenter</span>?</h2>
+            <p class="text-muted">Chúng tôi cam kết chất lượng giảng dạy và trải nghiệm học tập tốt nhất</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center p-4">
+                    <div class="feature-icon bg-primary bg-opacity-10 rounded-3 mx-auto mb-3">
+                        <i class="bi bi-person-badge-fill text-primary fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold">Giảng viên chuyên nghiệp</h5>
+                    <p class="text-muted small">100% giảng viên có bằng thạc sĩ hoặc tương đương, kinh nghiệm thực tế tại nước ngoài.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-4">
+                    <div class="feature-icon bg-success bg-opacity-10 rounded-3 mx-auto mb-3">
+                        <i class="bi bi-camera-video-fill text-success fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold">Học Offline & Online</h5>
+                    <p class="text-muted small">Linh hoạt tham gia trực tiếp hoặc qua Google Meet, mỗi buổi đều có link Meet riêng.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-4">
+                    <div class="feature-icon bg-warning bg-opacity-10 rounded-3 mx-auto mb-3">
+                        <i class="bi bi-robot text-warning fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold">AI cá nhân hóa</h5>
+                    <p class="text-muted small">Hệ thống AI phân tích lịch sử học tập, đề xuất lộ trình và khóa học phù hợp nhất với bạn.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-4">
+                    <div class="feature-icon bg-info bg-opacity-10 rounded-3 mx-auto mb-3">
+                        <i class="bi bi-award-fill text-info fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold">Chứng chỉ được công nhận</h5>
+                    <p class="text-muted small">Hoàn thành khóa học đạt từ 50 điểm, học viên được cấp chứng chỉ của trung tâm.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-4">
+                    <div class="feature-icon bg-danger bg-opacity-10 rounded-3 mx-auto mb-3">
+                        <i class="bi bi-calendar-check-fill text-danger fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold">Lịch học linh hoạt</h5>
+                    <p class="text-muted small">Nhiều ca học trong ngày, từ sáng đến tối, cả ngày cuối tuần để phù hợp mọi lịch trình.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-4">
+                    <div class="feature-icon bg-purple bg-opacity-10 rounded-3 mx-auto mb-3" style="background:#7c3aed22!important">
+                        <i class="bi bi-graph-up-arrow fs-2" style="color:#7c3aed"></i>
+                    </div>
+                    <h5 class="fw-bold">Theo dõi tiến độ</h5>
+                    <p class="text-muted small">Dashboard cá nhân giúp bạn theo dõi điểm số, chuyên cần và tiến độ học tập mọi lúc.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Khóa học nổi bật -->
+@if (khoaHocMo.Any())
+{
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold mb-1">Khóa học đang mở</h2>
+                    <p class="text-muted mb-0">Đăng ký ngay để không bỏ lỡ</p>
+                </div>
+                <a href="/KhoaHoc" class="btn btn-outline-primary">Xem tất cả <i class="bi bi-arrow-right ms-1"></i></a>
+            </div>
+            <div class="row g-4">
+                @foreach (var kh in khoaHocMo.Take(3))
+                {
+                    var soHv = kh.DanhSachDangKy.Count(d => d.TrangThai != QuanLyKhoaHoc.Models.TrangThaiDangKy.HuyBo);
+                    var mauSac = kh.NgonNgu switch {
+                        "Tiếng Anh" => "#0d6efd", "Tiếng Nhật" => "#dc3545",
+                        "Tiếng Hàn" => "#fd7e14", "Tiếng Trung" => "#198754", _ => "#6c757d"
+                    };
+                    <div class="col-md-4">
+                        <div class="card h-100 shadow-sm border-0 course-card" style="border-top:3px solid @mauSac!important">
+                            <div class="card-body p-3">
+                                <span class="badge text-white mb-2" style="background:@mauSac">@kh.NgonNgu</span>
+                                <span class="badge bg-light text-dark border ms-1 mb-2">@kh.TrinhDo</span>
+                                <h6 class="fw-bold">@kh.TenKhoaHoc</h6>
+                                <p class="text-muted small">@(kh.MoTa.Length > 80 ? kh.MoTa[..80] + "…" : kh.MoTa)</p>
+                                <div class="text-muted small">
+                                    <i class="bi bi-calendar me-1"></i>@kh.NgayBatDau.ToString("dd/MM/yyyy")
+                                    <span class="ms-3"><i class="bi bi-people me-1"></i>@soHv/@kh.SoLuongToiDa học viên</span>
+                                </div>
+                            </div>
+                            <div class="card-footer border-0 bg-transparent d-flex justify-content-between align-items-center pb-3 px-3">
+                                <span class="fw-bold text-primary">@kh.HocPhi.ToString("N0")₫</span>
+                                <button class="btn btn-sm btn-primary" onclick="dangKyKhoaHoc(@kh.Id)">
+                                    <i class="bi bi-plus-circle me-1"></i>Đăng ký
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Testimonials -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Học viên nói gì về chúng tôi?</h2>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="avatar-circle" style="width:50px;height:50px;font-size:1rem;background:linear-gradient(135deg,#0d6efd,#0dcaf0)">LM</div>
+                        <div>
+                            <div class="fw-bold">Lê Thị Mai</div>
+                            <div class="text-muted small">Học viên IELTS</div>
+                        </div>
+                    </div>
+                    <div class="text-warning mb-2">★★★★★</div>
+                    <p class="text-muted small mb-0">"Sau 4 tháng học tại EduCenter, em đã đạt IELTS 7.0. Giảng viên rất tận tâm, học linh hoạt cả online và offline rất tiện!"</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="avatar-circle" style="width:50px;height:50px;font-size:1rem;background:linear-gradient(135deg,#dc3545,#fd7e14)">PA</div>
+                        <div>
+                            <div class="fw-bold">Phạm Văn An</div>
+                            <div class="text-muted small">Học viên Tiếng Nhật</div>
+                        </div>
+                    </div>
+                    <div class="text-warning mb-2">★★★★★</div>
+                    <p class="text-muted small mb-0">"Mình đi làm nên hay học online qua Meet. EduCenter hỗ trợ rất tốt, có link Meet từng buổi rõ ràng, không bao giờ bỏ lỡ buổi nào!"</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100 p-4">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="avatar-circle" style="width:50px;height:50px;font-size:1rem;background:linear-gradient(135deg,#198754,#20c997)">NL</div>
+                        <div>
+                            <div class="fw-bold">Nguyễn Thu Lan</div>
+                            <div class="text-muted small">Học viên Tiếng Hàn</div>
+                        </div>
+                    </div>
+                    <div class="text-warning mb-2">★★★★☆</div>
+                    <p class="text-muted small mb-0">"AI gợi ý khóa học rất chính xác! Mình học xong N5 và AI đề xuất ngay N4 phù hợp với trình độ. Dashboard theo dõi điểm rất trực quan."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tin tức nổi bật -->
+<section class="py-5 bg-light" id="sectionTinTuc" style="display:none">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">Tin tức &amp; Sự kiện</h2>
+                <p class="text-muted mb-0">Cập nhật những thông tin mới nhất từ EduCenter</p>
+            </div>
+            <a href="/TinTuc" class="btn btn-outline-primary">Xem tất cả <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+        <div class="row g-4" id="tinTucCards"></div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5" style="background:linear-gradient(135deg,#0d6efd,#0dcaf0)">
+    <div class="container text-center text-white">
+        <h2 class="fw-bold mb-3">Sẵn sàng bắt đầu hành trình ngoại ngữ?</h2>
+        <p class="lead mb-4 text-white-50">Đăng ký miễn phí và nhận tư vấn khóa học phù hợp với AI</p>
+        <a href="/Auth/DangKy" class="btn btn-warning btn-lg fw-semibold me-3 shadow">
+            <i class="bi bi-person-plus me-2"></i>Đăng ký ngay
+        </a>
+        <a href="/LichHoc" class="btn btn-outline-light btn-lg">
+            <i class="bi bi-calendar3 me-2"></i>Xem lịch học
+        </a>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+async function goiYAI() {
+    const trinhDo = document.getElementById('aiTrinhDo').value;
+    const ngonNgu = document.getElementById('aiNgonNgu').value;
+    const res = await fetch(`/api/ai/goi-y?trinhDo=${encodeURIComponent(trinhDo)}&ngonNgu=${encodeURIComponent(ngonNgu)}`);
+    const data = await res.json();
+    renderAICards(data);
+}
+
+function renderAICards(data) {
+    const colors = { 'Tiếng Anh': '#0d6efd', 'Tiếng Nhật': '#dc3545', 'Tiếng Hàn': '#fd7e14', 'Tiếng Trung': '#198754', 'Tiếng Pháp': '#6f42c1' };
+    const section = document.getElementById('aiResultSection');
+    const cards = document.getElementById('aiCards');
+    if (!data.length) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    cards.innerHTML = data.map(k => {
+        const c = colors[k.ngonNgu] || '#6c757d';
+        return `<div class="col-md-4 col-lg-3">
+            <div class="card border-0 shadow-sm h-100" style="border-top:3px solid ${c}!important">
+                <div class="card-body p-3">
+                    <span class="badge text-white mb-2" style="background:${c}">${k.ngonNgu}</span>
+                    <span class="badge bg-light text-dark border ms-1 mb-2">${k.trinhDo}</span>
+                    ${(k.tags||[]).map(t=>`<span class="badge bg-warning text-dark mb-2 ms-1 small">${t}</span>`).join('')}
+                    <h6 class="fw-bold">${k.tenKhoaHoc}</h6>
+                    <p class="text-muted small">${k.lyDo || ''}</p>
+                    <div class="fw-bold text-primary">${(k.hocPhi||0).toLocaleString('vi-VN')}₫</div>
+                </div>
+                <div class="card-footer border-0 bg-transparent pb-3 px-3">
+                    <button class="btn btn-sm btn-primary w-100" onclick="dangKyKhoaHoc(${k.id})">
+                        <i class="bi bi-plus-circle me-1"></i>Đăng ký
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function dangKyKhoaHoc(id) {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) { window.location.href = '/Auth/DangNhap'; return; }
+    if (!confirm('Bạn muốn đăng ký khóa học này?')) return;
+    const res = await apiCall('/api/hoc-vien/dang-ky-khoa-hoc', { method: 'POST', body: { khoaHocId: id, ghiChu: '' } });
+    const d = await res.json();
+    showToast(res.ok ? 'success' : 'danger', d.message);
+    if (res.ok) setTimeout(() => location.reload(), 1500);
+}
+
+// Load banner carousel
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const res = await fetch('/api/banner');
+        if (!res.ok) return;
+        const banners = await res.json();
+        if (!banners.length) return;
+        const indicators = document.getElementById('carouselIndicators');
+        const inner = document.getElementById('carouselInner');
+        indicators.innerHTML = banners.map((b, i) =>
+            `<button type="button" data-bs-target="#bannerCarousel" data-bs-slide-to="${i}" ${i===0?'class="active"':''}></button>`
+        ).join('');
+        inner.innerHTML = banners.map((b, i) => `
+            <div class="carousel-item ${i===0?'active':''}">
+                <img src="${b.hinhAnh}" class="d-block w-100" style="height:400px;object-fit:cover" alt="${b.tieuDe}" onerror="this.src='https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&q=80'">
+                <div class="carousel-caption d-none d-md-block" style="background:rgba(0,0,0,.4);border-radius:12px;padding:16px 24px">
+                    <h4 class="fw-bold">${b.tieuDe}</h4>
+                    <p class="mb-2 small">${b.moTa}</p>
+                    ${b.duongDanLienKet ? `<a href="${b.duongDanLienKet}" class="btn btn-warning btn-sm fw-semibold">Tìm hiểu thêm <i class="bi bi-arrow-right ms-1"></i></a>` : ''}
+                </div>
+            </div>`).join('');
+        document.getElementById('bannerSection').style.display = '';
+    } catch(e) {}
+});
+
+// Load tin tức nổi bật
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const res = await fetch('/api/bai-viet?noiBat=true&pageSize=3');
+        if (!res.ok) return;
+        const data = await res.json();
+        const items = data.items || data;
+        if (!items || !items.length) return;
+        const section = document.getElementById('sectionTinTuc');
+        const cards = document.getElementById('tinTucCards');
+        cards.innerHTML = items.slice(0, 3).map(b => `
+            <div class="col-md-4">
+                <a href="/TinTuc/${b.id}" class="text-decoration-none text-dark">
+                    <div class="card border-0 shadow-sm h-100 hover-shadow">
+                        ${b.hinhAnh ? `<img src="${b.hinhAnh}" class="card-img-top" style="height:180px;object-fit:cover" alt="${b.tieuDe}" onerror="this.parentElement.removeChild(this)">` : `<div class="card-img-top bg-primary bg-opacity-10 d-flex align-items-center justify-content-center" style="height:180px"><i class="bi bi-newspaper text-primary" style="font-size:3rem"></i></div>`}
+                        <div class="card-body p-3">
+                            <span class="badge bg-primary bg-opacity-10 text-primary small mb-2">${b.theLoai || 'Tin tức'}</span>
+                            <h6 class="fw-bold mb-2 lh-sm">${b.tieuDe}</h6>
+                            <p class="text-muted small mb-0 line-clamp-2">${b.tomTat || ''}</p>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center pt-0 pb-3 px-3">
+                            <small class="text-muted"><i class="bi bi-person me-1"></i>${b.tacGia || 'EduCenter'}</small>
+                            <small class="text-muted">${new Date(b.ngayTao).toLocaleDateString('vi-VN')}</small>
+                        </div>
+                    </div>
+                </a>
+            </div>`).join('');
+        section.style.display = '';
+    } catch(e) {}
+});
+
+// Load gợi ý cá nhân nếu đã đăng nhập
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) return;
+
+    const res = await apiCall('/api/ai/goi-y-cua-toi');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.length) return;
+
+    const section = document.getElementById('sectionGoiYCaNhan');
+    const cards = document.getElementById('goiYCaNhanCards');
+    const colors = { 'Tiếng Anh': '#0d6efd', 'Tiếng Nhật': '#dc3545', 'Tiếng Hàn': '#fd7e14', 'Tiếng Trung': '#198754', 'Tiếng Pháp': '#6f42c1' };
+
+    cards.innerHTML = data.slice(0,4).map(k => {
+        const c = colors[k.ngonNgu] || '#6c757d';
+        return `<div class="col-md-6 col-lg-3">
+            <div class="card border-0 shadow-sm h-100" style="border-top:3px solid ${c}!important">
+                <div class="card-body p-3">
+                    <span class="badge text-white mb-2" style="background:${c}">${k.ngonNgu}</span>
+                    ${(k.tags||[]).map(t=>`<span class="badge bg-warning text-dark ms-1 mb-2 small">${t}</span>`).join('')}
+                    <h6 class="fw-bold">${k.tenKhoaHoc}</h6>
+                    <p class="text-muted small">${k.lyDo || ''}</p>
+                    <div class="fw-bold text-primary">${(k.hocPhi||0).toLocaleString('vi-VN')}₫</div>
+                </div>
+                <div class="card-footer border-0 bg-transparent pb-3 px-3">
+                    <button class="btn btn-sm btn-primary w-100" onclick="dangKyKhoaHoc(${k.id})">
+                        <i class="bi bi-plus-circle me-1"></i>Đăng ký
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+    section.style.display = '';
+});
+</script>
+}

@@ -1,0 +1,293 @@
+@{
+    ViewData["Title"] = "Kết quả học tập";
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="stat-icon bg-warning bg-opacity-10"><i class="bi bi-award text-warning fs-4"></i></div>
+        <div>
+            <h4 class="mb-0 fw-bold">Kết quả học tập</h4>
+            <p class="text-muted mb-0 small">Bảng điểm chi tiết theo hệ thống đánh giá</p>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="text-primary fs-2 fw-bold" id="smTotal">—</div><small class="text-muted">Khóa học</small></div></div>
+        <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="text-warning fs-2 fw-bold" id="smDiemTB">—</div><small class="text-muted">Điểm TB</small></div></div>
+        <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="text-success fs-2 fw-bold" id="smDat">—</div><small class="text-muted">Đạt chứng chỉ</small></div></div>
+        <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="text-info fs-2 fw-bold" id="smChuyenCan">—</div><small class="text-muted">Chuyên cần TB</small></div></div>
+    </div>
+
+    <div class="alert alert-info d-flex align-items-start gap-3 mb-4">
+        <i class="bi bi-info-circle-fill fs-5 flex-shrink-0 mt-1"></i>
+        <div>
+            <strong>Hệ thống đánh giá:</strong>
+            Tổng kết = <strong>Chuyên cần×10%</strong> + <strong>Giữa kỳ×30%</strong> + <strong>Cuối kỳ×60%</strong>
+            <br><small>Xếp loại: ≥90 Xuất sắc · ≥80 Giỏi · ≥65 Khá · ≥50 Trung bình · &lt;50 Không đạt &nbsp;|&nbsp; Từ 50 điểm: đủ điều kiện cấp chứng chỉ</small>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 flex-wrap mb-4" id="filterBtns">
+        <button class="btn btn-primary btn-sm" onclick="filterKetQua('all',this)">Tất cả</button>
+        <button class="btn btn-outline-success btn-sm" onclick="filterKetQua('dat',this)">✅ Đạt chứng chỉ</button>
+        <button class="btn btn-outline-warning btn-sm" onclick="filterKetQua('diem',this)">📝 Đã có điểm</button>
+        <button class="btn btn-outline-danger btn-sm" onclick="filterKetQua('khongdat',this)">❌ Không đạt</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="filterKetQua('chuadiem',this)">⏳ Chưa có điểm</button>
+    </div>
+
+    <div id="loadingState" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="text-muted mt-2">Đang tải...</p>
+    </div>
+    <div id="ketQuaList" class="row g-4 d-none"></div>
+    <div id="emptyState" class="text-center py-5 d-none">
+        <i class="bi bi-inbox text-muted" style="font-size:3rem"></i>
+        <h5 class="mt-3 text-muted">Chưa có kết quả học tập</h5>
+        <a href="/KhoaHoc" class="btn btn-primary mt-3"><i class="bi bi-search me-2"></i>Tìm khóa học</a>
+    </div>
+</div>
+
+<!-- Modal chi tiết buổi học -->
+<div class="modal fade" id="modalChiTiet" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header" id="modalChiTietHeader">
+                <h6 class="modal-title fw-bold" id="modalChiTietTitle"><i class="bi bi-bar-chart-steps me-2"></i>Chi tiết buổi học</h6>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalChiTietBody">
+                <div class="text-center py-4"><div class="spinner-border text-primary"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let allData = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+    if (!localStorage.getItem('jwt_token')) { window.location.href = '/Auth/DangNhap'; return; }
+    const res = await apiCall('/api/diem/cua-toi');
+    document.getElementById('loadingState').classList.add('d-none');
+    if (!res.ok) return;
+    allData = await res.json();
+    if (!allData.length) { document.getElementById('emptyState').classList.remove('d-none'); return; }
+    updateSummary();
+    renderKetQua('all');
+    document.getElementById('ketQuaList').classList.remove('d-none');
+});
+
+function updateSummary() {
+    document.getElementById('smTotal').textContent = allData.length;
+    const coTK = allData.filter(d => d.diemTongKet != null);
+    document.getElementById('smDiemTB').textContent = coTK.length > 0
+        ? (coTK.reduce((s,d)=>s+d.diemTongKet,0)/coTK.length).toFixed(1) : '—';
+    document.getElementById('smDat').textContent = allData.filter(d => d.duDieuKienCapChungChi).length;
+    const coCC = allData.filter(d => d.diemChuyenCan != null);
+    document.getElementById('smChuyenCan').textContent = coCC.length > 0
+        ? (coCC.reduce((s,d)=>s+d.diemChuyenCan,0)/coCC.length).toFixed(1)+'/10' : '—';
+}
+
+function filterKetQua(type, btn) {
+    document.querySelectorAll('#filterBtns button').forEach(b => {
+        b.className = b.className.replace(/\bbtn-(success|primary|warning|danger|info|secondary)\b/,'btn-outline-$1');
+    });
+    if (btn) btn.className = btn.className.replace('btn-outline-','btn-');
+    renderKetQua(type);
+}
+
+function renderKetQua(type) {
+    let d = allData;
+    if (type === 'dat') d = allData.filter(x => x.duDieuKienCapChungChi);
+    else if (type === 'diem') d = allData.filter(x => x.diemGiuaKy != null || x.diemCuoiKy != null);
+    else if (type === 'khongdat') d = allData.filter(x => x.daHoanThanh && !x.duDieuKienCapChungChi);
+    else if (type === 'chuadiem') d = allData.filter(x => x.diemGiuaKy == null && x.diemCuoiKy == null);
+
+    const xc = { 'Xuất sắc':'success','Giỏi':'primary','Khá':'info','Trung bình':'warning','Không đạt':'danger' };
+    const clr = { 'Tiếng Anh':'#0d6efd','Tiếng Nhật':'#dc3545','Tiếng Hàn':'#fd7e14','Tiếng Trung':'#198754','Tiếng Pháp':'#6f42c1' };
+
+    document.getElementById('ketQuaList').innerHTML = d.length === 0
+        ? '<div class="col-12 text-center text-muted py-5"><i class="bi bi-search fs-1 d-block mb-2"></i>Không có kết quả phù hợp</div>'
+        : d.map(x => {
+            const c = clr[x.ngonNgu]||'#6c757d';
+            const ccColor = (x.phanTramDiHoc||100) >= 80 ? 'success' : (x.phanTramDiHoc||100) >= 60 ? 'warning' : 'danger';
+            const ngayBD = x.ngayBatDau ? new Date(x.ngayBatDau).toLocaleDateString('vi-VN') : '—';
+            const ngayKT = x.ngayKetThuc ? new Date(x.ngayKetThuc).toLocaleDateString('vi-VN') : '—';
+            return `<div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm h-100 card-hover" style="border-top:3px solid ${c}!important">
+                    <div class="card-body">
+                        <div class="d-flex gap-1 flex-wrap mb-2">
+                            <span class="badge text-white" style="background:${c}">${x.ngonNgu||'—'}</span>
+                            <span class="badge bg-light text-dark border">${x.trinhDo||'—'}</span>
+                            ${x.xepLoai ? `<span class="badge bg-${xc[x.xepLoai]||'secondary'}">${x.xepLoai}</span>` : ''}
+                        </div>
+                        <h6 class="fw-bold">${x.tenKhoaHoc}</h6>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-muted">Chuyên cần <small class="text-muted">(10%)</small></span>
+                                <strong class="text-${ccColor}">${x.diemChuyenCan!=null ? x.diemChuyenCan.toFixed(1)+'/10' : '—'}</strong>
+                            </div>
+                            <div class="progress progress-xs mb-2"><div class="progress-bar bg-${ccColor}" style="width:${x.diemChuyenCan!=null?x.diemChuyenCan*10:0}%"></div></div>
+
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-muted">Giữa kỳ <small class="text-muted">(30%)</small></span>
+                                <strong>${x.diemGiuaKy!=null ? x.diemGiuaKy.toFixed(1)+'/10' : '—'}</strong>
+                            </div>
+                            <div class="progress progress-xs mb-2"><div class="progress-bar bg-info" style="width:${x.diemGiuaKy!=null?x.diemGiuaKy*10:0}%"></div></div>
+
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span class="text-muted">Cuối kỳ <small class="text-muted">(60%)</small></span>
+                                <strong>${x.diemCuoiKy!=null ? x.diemCuoiKy.toFixed(1)+'/10' : '—'}</strong>
+                            </div>
+                            <div class="progress progress-xs mb-2"><div class="progress-bar bg-primary" style="width:${x.diemCuoiKy!=null?x.diemCuoiKy*10:0}%"></div></div>
+                        </div>
+
+                        <div class="rounded p-2 mb-3 text-center" style="background:${c}12;border:1px solid ${c}33">
+                            <small class="text-muted">Điểm tổng kết</small>
+                            <div class="fw-bold fs-3 lh-1 my-1" style="color:${c}">${x.diemTongKet!=null?x.diemTongKet.toFixed(1):'—'}<small class="fs-6">/100</small></div>
+                            ${x.diemTongKet!=null?`<div class="progress" style="height:5px"><div class="progress-bar" style="width:${x.diemTongKet}%;background:${c}"></div></div>`:''}
+                        </div>
+
+                        ${x.tongBuoiDaDienRa>0 ? `<div class="text-muted small mb-2">
+                            <i class="bi bi-calendar-check me-1"></i>Đã học: <strong>${x.soCoMat}/${x.tongBuoiDaDienRa}</strong> buổi (${x.phanTramDiHoc}%)
+                            ${x.soVang>0?`<span class="text-danger ms-2">· Vắng ${x.soVang}</span>`:''}
+                        </div>` : ''}
+
+                        <div class="text-muted small mb-2">
+                            <i class="bi bi-person-badge me-1"></i>${x.tenGiangVien||'—'}
+                            <br><i class="bi bi-calendar me-1"></i>${ngayBD} → ${ngayKT}
+                        </div>
+
+                        ${x.nhanXet ? `<div class="alert alert-light border small py-2 px-3 mb-2"><i class="bi bi-chat-quote me-1 text-muted"></i><em>${x.nhanXet}</em></div>` : ''}
+                        ${x.duDieuKienCapChungChi
+                            ? '<div class="alert alert-success small py-2 text-center mb-2">🎓 Đủ điều kiện cấp chứng chỉ</div>'
+                            : x.daHoanThanh ? '<div class="alert alert-danger small py-2 text-center mb-2">❌ Không đủ điều kiện cấp chứng chỉ</div>' : ''}
+                        <button class="btn btn-outline-primary btn-sm w-100" onclick="xemChiTiet(${x.khoaHocId},'${x.tenKhoaHoc.replace(/'/g,"\\'")}','${c}')">
+                            <i class="bi bi-bar-chart-steps me-1"></i>Xem chi tiết buổi học
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+}
+
+async function xemChiTiet(khoaHocId, tenKhoaHoc, mauSac) {
+    const header = document.getElementById('modalChiTietHeader');
+    const title  = document.getElementById('modalChiTietTitle');
+    const body   = document.getElementById('modalChiTietBody');
+
+    header.style.borderBottom = `3px solid ${mauSac}`;
+    title.innerHTML = `<i class="bi bi-bar-chart-steps me-2" style="color:${mauSac}"></i>${tenKhoaHoc}`;
+    body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="text-muted mt-2 small">Đang tải...</p></div>';
+
+    new bootstrap.Modal(document.getElementById('modalChiTiet')).show();
+
+    try {
+        const res = await apiCall(`/api/buoi-hoc/cua-toi/${khoaHocId}`);
+        if (!res.ok) { body.innerHTML = '<div class="alert alert-danger">Không thể tải dữ liệu</div>'; return; }
+        const buois = await res.json();
+
+        if (!buois.length) {
+            body.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-calendar-x fs-2 d-block mb-2"></i>Chưa có buổi học nào</div>';
+            return;
+        }
+
+        const daDienRa = buois.filter(b => b.daDienRa);
+        const soCoMat  = daDienRa.filter(b => ['CoMat','HocOnline','VangCoPhep'].includes(b.trangThaiDiemDanh)).length;
+        const soVang   = daDienRa.filter(b => b.trangThaiDiemDanh === 'Vang').length;
+        const tongDaDienRa = daDienRa.length;
+        const phanTram = tongDaDienRa > 0 ? Math.round(soCoMat * 100 / tongDaDienRa) : 100;
+        const ccColor  = phanTram >= 80 ? 'success' : phanTram >= 60 ? 'warning' : 'danger';
+
+        const trangThaiLabel = {
+            'CoMat':          '<span class="badge bg-success">✅ Có mặt</span>',
+            'HocOnline':      '<span class="badge bg-info">💻 Online</span>',
+            'VangCoPhep':     '<span class="badge bg-warning text-dark">📋 Vắng phép</span>',
+            'Vang':           '<span class="badge bg-danger">❌ Vắng</span>',
+            'ChuaDiemDanh':   '<span class="badge bg-secondary">— Chưa điểm danh</span>'
+        };
+        const hinhThucIcon = { 'Offline':'🏫', 'Online':'💻', 'KetHop':'🔀' };
+
+        body.innerHTML = `
+            <div class="row g-3 mb-3">
+                <div class="col-6 col-md-3 text-center">
+                    <div class="card border-0 bg-light p-2">
+                        <div class="fs-4 fw-bold" style="color:${mauSac}">${buois.length}</div>
+                        <small class="text-muted">Tổng buổi</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 text-center">
+                    <div class="card border-0 bg-light p-2">
+                        <div class="fs-4 fw-bold text-success">${soCoMat}</div>
+                        <small class="text-muted">Có mặt</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 text-center">
+                    <div class="card border-0 bg-light p-2">
+                        <div class="fs-4 fw-bold text-danger">${soVang}</div>
+                        <small class="text-muted">Vắng</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 text-center">
+                    <div class="card border-0 bg-light p-2">
+                        <div class="fs-4 fw-bold text-${ccColor}">${phanTram}%</div>
+                        <small class="text-muted">Chuyên cần</small>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between small mb-1">
+                    <span>Tỉ lệ có mặt: <strong>${soCoMat}/${tongDaDienRa}</strong> buổi đã diễn ra</span>
+                    <strong class="text-${ccColor}">${phanTram}%</strong>
+                </div>
+                <div class="progress" style="height:8px">
+                    <div class="progress-bar bg-${ccColor}" style="width:${phanTram}%"></div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-center" style="width:50px">Buổi</th>
+                            <th>Ngày học</th>
+                            <th>Giờ</th>
+                            <th>Hình thức / Phòng</th>
+                            <th>Điểm danh</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${buois.map(b => {
+                            const ngayHocDate = b.ngayHocRaw ? new Date(b.ngayHocRaw) : null;
+                            const isToday = ngayHocDate && ngayHocDate.toDateString() === new Date().toDateString();
+                            const isFuture = !b.daDienRa && !isToday;
+                            return `<tr class="${isToday ? 'table-warning' : ''}">
+                                <td class="text-center fw-bold" style="color:${mauSac}">B${b.soBuoiThuTu}</td>
+                                <td class="small">
+                                    ${b.ngayHoc}
+                                    ${isToday ? '<span class="badge bg-warning text-dark ms-1" style="font-size:.6rem">Hôm nay</span>' : ''}
+                                </td>
+                                <td class="small text-muted">${b.gioBatDau}–${b.gioKetThuc}</td>
+                                <td class="small">${hinhThucIcon[b.hinhThuc] || '🏫'} ${b.hinhThuc === 'Offline' ? (b.phongHoc||'—') : b.hinhThuc}</td>
+                                <td>${b.daDienRa
+                                    ? (trangThaiLabel[b.trangThaiDiemDanh] || trangThaiLabel['ChuaDiemDanh'])
+                                    : isFuture
+                                    ? '<span class="badge bg-light text-muted border" style="font-size:.65rem">Chưa diễn ra</span>'
+                                    : '<span class="badge bg-warning text-dark" style="font-size:.65rem">Hôm nay</span>'}</td>
+                                <td>${b.linkMeet && b.hinhThuc !== 'Offline'
+                                    ? `<a href="${b.linkMeet}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-1" style="font-size:.7rem" title="Tham gia Meet"><i class="bi bi-camera-video-fill"></i></a>`
+                                    : ''}</td>
+                            </tr>`;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+    } catch(e) {
+        body.innerHTML = '<div class="alert alert-danger">Lỗi tải dữ liệu buổi học</div>';
+    }
+}
+</script>
+}

@@ -1,0 +1,202 @@
+@{
+    ViewData["Title"] = "Dashboard Học Viên";
+    Layout = "_Layout";
+}
+
+<div class="container py-4">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="avatar-circle" style="width:56px;height:56px;font-size:1.3rem" id="hvAvatar">?</div>
+        <div>
+            <h4 class="mb-0 fw-bold" id="hvHoTen">Đang tải...</h4>
+            <p class="text-muted mb-0 small">🎓 Học viên EduCenter</p>
+        </div>
+        <div class="ms-auto d-flex gap-2 flex-wrap">
+            <a href="/diem-cua-toi" class="btn btn-outline-warning btn-sm"><i class="bi bi-award me-1"></i>Kết quả</a>
+            <a href="/LichHoc" class="btn btn-outline-info btn-sm"><i class="bi bi-calendar3 me-1"></i>Lịch học</a>
+            <a href="/HocVien/LichSuDangKy" class="btn btn-outline-secondary btn-sm"><i class="bi bi-clock-history me-1"></i>Lịch sử</a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="text-primary display-6 fw-bold" id="statDangHoc">—</div><small class="text-muted">Đang học</small></div></div>
+        <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="text-success display-6 fw-bold" id="statHoanThanh">—</div><small class="text-muted">Hoàn thành</small></div></div>
+        <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="text-warning display-6 fw-bold" id="statDiemTB">—</div><small class="text-muted">Điểm TB</small></div></div>
+        <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="text-danger display-6 fw-bold" id="statChoDuyet">—</div><small class="text-muted">Chờ duyệt</small></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <!-- Buổi học sắp tới + link Meet -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-calendar-event text-primary fs-5"></i>
+                    <span class="fw-semibold">Buổi học sắp tới</span>
+                    <span class="badge bg-primary ms-auto" id="badgeBuoi">0</span>
+                </div>
+                <div id="buoiHocList"><div class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary"></div></div></div>
+            </div>
+            <!-- Khóa học đang tham gia -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-book-half text-success fs-5"></i>
+                    <span class="fw-semibold">Khóa học đang tham gia</span>
+                </div>
+                <div id="khoaHocList"><div class="text-center py-4"><div class="spinner-border spinner-border-sm text-success"></div></div></div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <!-- Điểm số -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-award text-warning fs-5"></i>
+                    <span class="fw-semibold">Kết quả học tập</span>
+                    <a href="/diem-cua-toi" class="btn btn-sm btn-outline-warning ms-auto py-0">Chi tiết</a>
+                </div>
+                <div id="diemList"><div class="text-center py-4"><div class="spinner-border spinner-border-sm text-warning"></div></div></div>
+            </div>
+            <!-- AI gợi ý -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 d-flex align-items-center gap-2">
+                    <i class="bi bi-robot text-primary fs-5"></i>
+                    <span class="fw-semibold">AI gợi ý tiếp theo</span>
+                </div>
+                <div class="card-body p-2" id="goiYList"><div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) { window.location.href = '/Auth/DangNhap'; return; }
+    const hoTen = localStorage.getItem('ho_ten') || 'Học viên';
+    document.getElementById('hvHoTen').textContent = hoTen;
+    const w = hoTen.split(' ');
+    document.getElementById('hvAvatar').textContent = w.length >= 2
+        ? (w[w.length-2][0] + w[w.length-1][0]).toUpperCase()
+        : hoTen[0].toUpperCase();
+    await Promise.all([loadDangKy(), loadBuoiHoc(), loadDiem(), loadGoiY()]);
+});
+
+async function loadDangKy() {
+    const res = await apiCall('/api/dang-ky/cua-toi');
+    if (!res.ok) return;
+    const list = await res.json();
+    document.getElementById('statDangHoc').textContent = list.filter(d => d.trangThai === 'DangHoc').length;
+    document.getElementById('statHoanThanh').textContent = list.filter(d => d.trangThai === 'HoanThanh').length;
+    document.getElementById('statChoDuyet').textContent = list.filter(d => d.trangThai === 'ChoDuyet').length;
+    const colors = { 'Tiếng Anh':'#0d6efd','Tiếng Nhật':'#dc3545','Tiếng Hàn':'#fd7e14','Tiếng Trung':'#198754','Tiếng Pháp':'#6f42c1' };
+    const dangHoc = list.filter(d => d.trangThai === 'DangHoc' || d.trangThai === 'DaDuyet');
+    document.getElementById('khoaHocList').innerHTML = dangHoc.length === 0
+        ? '<div class="text-center text-muted py-4">Chưa có khóa học nào</div>'
+        : dangHoc.map(d => { const c = colors[d.ngonNgu]||'#6c757d';
+            return `<div class="d-flex align-items-center gap-3 p-3 border-bottom">
+                <div style="width:10px;height:10px;border-radius:50%;background:${c};flex-shrink:0"></div>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="fw-semibold small text-truncate">${d.tenKhoaHoc}</div>
+                    <small class="text-muted">${d.ngonNgu} · ${new Date(d.ngayDangKy).toLocaleDateString('vi-VN')}</small>
+                </div>
+                <span class="badge bg-primary flex-shrink-0">Đang học</span>
+            </div>`; }).join('');
+}
+
+async function loadBuoiHoc() {
+    const res = await apiCall('/api/buoi-hoc/sap-toi');
+    if (!res.ok) { document.getElementById('buoiHocList').innerHTML = '<div class="text-center text-muted py-4">Không có buổi học sắp tới</div>'; return; }
+    const list = await res.json();
+    document.getElementById('badgeBuoi').textContent = list.length;
+    const today = new Date().toLocaleDateString('vi-VN');
+    if (!list.length) {
+        document.getElementById('buoiHocList').innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-calendar-x fs-2 d-block mb-2"></i>Không có buổi học sắp tới</div>';
+        return;
+    }
+    document.getElementById('buoiHocList').innerHTML = list.slice(0,5).map(b => {
+        const isToday = b.ngayHoc === today;
+        const hinhThucBadge = b.hinhThuc === 'Online' ? 'bg-primary' : b.hinhThuc === 'KetHop' ? 'bg-info' : 'bg-secondary';
+        return `<div class="d-flex gap-3 p-3 border-bottom align-items-center ${isToday ? 'bg-warning bg-opacity-10' : ''}">
+            <div class="text-center flex-shrink-0" style="min-width:54px">
+                <div class="fw-bold text-primary small">${b.gioBatDau}</div>
+                <div class="text-muted" style="font-size:.7rem">${b.ngayHoc}</div>
+                ${isToday ? '<span class="badge bg-danger" style="font-size:.55rem">HÔM NAY</span>' : ''}
+            </div>
+            <div class="flex-grow-1 min-w-0">
+                <div class="fw-semibold small text-truncate">${b.tenKhoaHoc||'—'}</div>
+                <div class="text-muted" style="font-size:.72rem">
+                    <i class="bi bi-door-open me-1"></i>${b.phongHoc||'—'}
+                    <span class="badge ${hinhThucBadge} ms-1" style="font-size:.55rem">${b.hinhThuc === 'KetHop' ? 'Kết hợp' : b.hinhThuc}</span>
+                </div>
+            </div>
+            <div class="flex-shrink-0">
+                ${b.linkMeet
+                    ? `<a href="${b.linkMeet}" target="_blank" class="btn btn-sm btn-${isToday ? 'primary' : 'outline-primary'}">
+                        <i class="bi bi-camera-video me-1"></i>${isToday ? 'Vào học' : 'Meet'}
+                      </a>`
+                    : `<span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>${b.phongHoc||'Offline'}</span>`}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function loadDiem() {
+    const res = await apiCall('/api/diem/cua-toi');
+    if (!res.ok) return;
+    const list = await res.json();
+    const coTK = list.filter(d => d.diemTongKet != null);
+    const tb = coTK.length > 0 ? (coTK.reduce((s,d)=>s+d.diemTongKet,0)/coTK.length).toFixed(1) : '—';
+    document.getElementById('statDiemTB').textContent = tb;
+    const xc = { 'Xuất sắc':'success','Giỏi':'primary','Khá':'info','Trung bình':'warning','Không đạt':'danger' };
+    document.getElementById('diemList').innerHTML = list.length === 0
+        ? '<div class="text-center text-muted py-4"><i class="bi bi-inbox fs-2 d-block mb-2"></i>Chưa có điểm</div>'
+        : list.map(d => `<div class="p-3 border-bottom">
+            <div class="d-flex justify-content-between mb-1">
+                <span class="fw-semibold small text-truncate me-2">${d.tenKhoaHoc}</span>
+                ${d.xepLoai ? `<span class="badge bg-${xc[d.xepLoai]||'secondary'} flex-shrink-0">${d.xepLoai}</span>` : ''}
+            </div>
+            <div class="d-flex gap-3 text-muted mb-1" style="font-size:.72rem">
+                <span>CC: <b>${d.diemChuyenCan!=null?d.diemChuyenCan.toFixed(1):'—'}</b></span>
+                <span>GK: <b>${d.diemGiuaKy!=null?d.diemGiuaKy.toFixed(1):'—'}</b></span>
+                <span>CK: <b>${d.diemCuoiKy!=null?d.diemCuoiKy.toFixed(1):'—'}</b></span>
+                <span class="ms-auto text-primary fw-bold">TK: ${d.diemTongKet!=null?d.diemTongKet.toFixed(2):'—'}</span>
+            </div>
+            ${d.phanTramDiHoc != null ? `<div class="progress progress-xs mb-1"><div class="progress-bar bg-success" style="width:${d.phanTramDiHoc}%"></div></div>
+            <small class="text-muted">${d.phanTramDiHoc}% chuyên cần${d.soVang>0?` <span class="text-danger">· Vắng ${d.soVang} buổi</span>`:''}</small>` : ''}
+            ${d.duDieuKienCapChungChi ? '<div class="mt-1"><small class="text-success">✅ Đủ điều kiện cấp chứng chỉ</small></div>' : ''}
+        </div>`).join('');
+}
+
+async function loadGoiY() {
+    const res = await apiCall('/api/ai/goi-y-cua-toi');
+    if (!res.ok) return;
+    const list = await res.json();
+    const colors = { 'Tiếng Anh':'#0d6efd','Tiếng Nhật':'#dc3545','Tiếng Hàn':'#fd7e14','Tiếng Trung':'#198754','Tiếng Pháp':'#6f42c1' };
+    document.getElementById('goiYList').innerHTML = list.slice(0,3).map(k => {
+        const c = colors[k.ngonNgu]||'#6c757d';
+        return `<div class="p-2 mb-2 rounded" style="background:${c}10;border-left:3px solid ${c}">
+            <div class="fw-semibold small">${k.tenKhoaHoc}</div>
+            <div class="text-muted small mb-1">${k.lyDo||''}</div>
+            <div>${(k.tags||[]).map(t=>`<span class="badge bg-warning text-dark me-1 small">${t}</span>`).join('')}</div>
+            <button class="btn btn-sm btn-primary mt-2 w-100" onclick="dangKyKhoaHoc(${k.id})"><i class="bi bi-plus-circle me-1"></i>Đăng ký</button>
+        </div>`;
+    }).join('') || '<div class="text-center text-muted py-3 small">Không có gợi ý</div>';
+}
+
+async function dangKyKhoaHoc(id) {
+    if (!confirm('Bạn muốn đăng ký khóa học này?\nSau khi đăng ký bạn sẽ được chuyển đến trang thanh toán.')) return;
+    const res = await apiCall('/api/hoc-vien/dang-ky-khoa-hoc', { method:'POST', body:{ khoaHocId:id, ghiChu:'' } });
+    const d = await res.json();
+    if (res.ok) {
+        if (d.redirectUrl) {
+            window.location.href = d.redirectUrl;
+        } else {
+            showToast('success', d.message);
+            setTimeout(() => location.reload(), 1500);
+        }
+    } else {
+        showToast('danger', d.message);
+    }
+}
+</script>
+}

@@ -1,0 +1,90 @@
+@{
+    ViewData["Title"] = "Đăng ký tài khoản";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-person-plus text-primary" style="font-size:2.5rem"></i>
+                        <h4 class="fw-bold mt-2">Tạo tài khoản mới</h4>
+                        <p class="text-muted small">Tham gia cùng hàng nghìn học viên EduCenter</p>
+                    </div>
+
+                    <div id="alertBox" class="alert d-none"></div>
+
+                    <form id="formDangKy">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
+                            <input type="text" id="hoTen" class="form-control" placeholder="Nguyễn Văn A" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                            <input type="email" id="email" class="form-control" placeholder="email@example.com" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Số điện thoại</label>
+                            <input type="tel" id="sdt" class="form-control" placeholder="0901234567" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mật khẩu <span class="text-danger">*</span></label>
+                            <input type="password" id="matkhau" class="form-control" placeholder="Tối thiểu 6 ký tự" required minlength="6" />
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Xác nhận mật khẩu <span class="text-danger">*</span></label>
+                            <input type="password" id="xacNhanMK" class="form-control" placeholder="Nhập lại mật khẩu" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-person-check me-2"></i>Đăng ký
+                        </button>
+                    </form>
+
+                    <hr class="my-3">
+                    <p class="text-center text-muted mb-0">
+                        Đã có tài khoản? <a href="/dang-nhap" class="text-primary fw-semibold">Đăng nhập</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.getElementById('formDangKy').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const matkhau = document.getElementById('matkhau').value;
+    const xacNhan = document.getElementById('xacNhanMK').value;
+    if (matkhau !== xacNhan) { showAlert('warning', 'Mật khẩu xác nhận không khớp'); return; }
+
+    try {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                hoTen: document.getElementById('hoTen').value,
+                email: document.getElementById('email').value,
+                soDienThoai: document.getElementById('sdt').value,
+                matKhau: matkhau
+            })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showAlert('success', 'Đăng ký thành công! Đang chuyển đến trang đăng nhập...');
+            setTimeout(() => window.location.href = '/dang-nhap', 1500);
+        } else {
+            showAlert('danger', data.message || 'Đăng ký thất bại');
+        }
+    } catch(e) { showAlert('danger', 'Có lỗi xảy ra'); }
+});
+
+function showAlert(type, msg) {
+    const el = document.getElementById('alertBox');
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+}
+</script>
+}

@@ -1,0 +1,135 @@
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow border-0">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-mortarboard-fill text-primary" style="font-size:2.5rem"></i>
+                        <h4 class="fw-bold mt-2">Đăng nhập</h4>
+                        <p class="text-muted small">Trung tâm ngoại ngữ EduCenter</p>
+                    </div>
+
+                    <div id="alertBox" class="alert d-none" role="alert"></div>
+
+                    <form id="formDangNhap">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" id="email" class="form-control" placeholder="email@example.com" required />
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" id="matkhau" class="form-control" placeholder="Nhập mật khẩu" required />
+                                <button class="btn btn-outline-secondary" type="button" id="togglePass">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="btnLogin">
+                            <span id="loginText"><i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập</span>
+                            <span id="loginSpinner" class="d-none">
+                                <span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...
+                            </span>
+                        </button>
+                    </form>
+
+                    <hr class="my-4">
+                    <div class="text-center">
+                        <p class="text-muted mb-1">Chưa có tài khoản? <a href="/dang-ky" class="text-primary fw-semibold">Đăng ký ngay</a></p>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-light rounded small">
+                        <p class="fw-semibold mb-1 text-muted">Tài khoản demo (click để điền):</p>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="demoFill('admin@educenter.vn','Admin@123')"><i class="bi bi-shield-lock me-1"></i>Admin</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="demoFill('huong.gv@educenter.vn','Gv@123')"><i class="bi bi-person-badge me-1"></i>Giảng viên</button>
+                            <button type="button" class="btn btn-sm btn-outline-success" onclick="demoFill('mai.hv@gmail.com','User@123')"><i class="bi bi-person me-1"></i>Học viên</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.getElementById('togglePass').addEventListener('click', function() {
+    const inp = document.getElementById('matkhau');
+    const icon = this.querySelector('i');
+    if (inp.type === 'password') { inp.type = 'text'; icon.className = 'bi bi-eye-slash'; }
+    else { inp.type = 'password'; icon.className = 'bi bi-eye'; }
+});
+
+document.getElementById('formDangNhap').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    await thucHienDangNhap(
+        document.getElementById('email').value,
+        document.getElementById('matkhau').value
+    );
+});
+
+function demoFill(email, pass) {
+    document.getElementById('email').value = email;
+    document.getElementById('matkhau').value = pass;
+    document.getElementById('email').focus();
+}
+
+async function thucHienDangNhap(email, pass) {
+    document.getElementById('loginText').classList.add('d-none');
+    document.getElementById('loginSpinner').classList.remove('d-none');
+    document.getElementById('btnLogin').disabled = true;
+
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, matKhau: pass })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            localStorage.setItem('jwt_token', data.token);
+            localStorage.setItem('ho_ten', data.hoTen);
+            localStorage.setItem('email', data.email);
+            localStorage.setItem('vai_tro', data.vaiTro);
+            localStorage.setItem('anh_dai_dien', data.anhDaiDien || '');
+
+            // Set cookie để server-side [Authorize] hoạt động (8 giờ)
+            document.cookie = 'jwt_token=' + data.token + '; path=/; max-age=28800; SameSite=Lax';
+
+            showAlert('success', 'Đăng nhập thành công! Đang chuyển hướng...');
+            setTimeout(() => {
+                if (data.vaiTro === 'Admin') window.location.href = '/Admin';
+                else if (data.vaiTro === 'GiangVien') window.location.href = '/GiangVien/Dashboard';
+                else window.location.href = '/HocVien/Dashboard';
+            }, 800);
+        } else {
+            showAlert('danger', data.message || 'Email hoặc mật khẩu không đúng');
+        }
+    } catch(e) {
+        showAlert('danger', 'Không thể kết nối máy chủ');
+    } finally {
+        document.getElementById('loginText').classList.remove('d-none');
+        document.getElementById('loginSpinner').classList.add('d-none');
+        document.getElementById('btnLogin').disabled = false;
+    }
+}
+
+function showAlert(type, msg) {
+    const el = document.getElementById('alertBox');
+    el.className = `alert alert-${type}`;
+    el.textContent = msg;
+    el.classList.remove('d-none');
+}
+</script>
+}

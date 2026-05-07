@@ -1,0 +1,434 @@
+@model int
+@{
+    ViewData["Title"] = "Thanh toán khóa học";
+    Layout = "_Layout";
+    int dangKyId = Model;
+}
+
+<div class="container py-4" style="max-width:860px">
+    <!-- Loading -->
+    <div id="loadingState" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="text-muted mt-2">Đang tải thông tin...</p>
+    </div>
+
+    <!-- Error -->
+    <div id="errorState" class="d-none">
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <span id="errorMsg">Không tìm thấy thông tin đăng ký.</span>
+        </div>
+        <a href="/HocVien/LichSuDangKy" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Quay lại lịch sử
+        </a>
+    </div>
+
+    <!-- Main content -->
+    <div id="mainContent" class="d-none">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="/HocVien/LichSuDangKy">Lịch sử đăng ký</a></li>
+                <li class="breadcrumb-item active">Thanh toán</li>
+            </ol>
+        </nav>
+
+        <h4 class="fw-bold mb-4"><i class="bi bi-credit-card text-primary me-2"></i>Thanh toán học phí</h4>
+
+        <div class="row g-4">
+            <!-- Left: payment form -->
+            <div class="col-lg-7">
+                <!-- Course info card -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white fw-semibold">
+                        <i class="bi bi-book me-2"></i>Thông tin khóa học
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-sm-4 text-muted small">Tên khóa học</div>
+                            <div class="col-sm-8 fw-semibold" id="tenKhoaHoc">—</div>
+                            <div class="col-sm-4 text-muted small">Mã khóa học</div>
+                            <div class="col-sm-8"><code id="maKhoaHoc">—</code></div>
+                            <div class="col-sm-4 text-muted small">Học viên</div>
+                            <div class="col-sm-8" id="tenHocVien">—</div>
+                            <div class="col-sm-4 text-muted small">Mã học viên</div>
+                            <div class="col-sm-8"><code id="maHocVien">—</code></div>
+                            <div class="col-sm-4 text-muted small">Ngày đăng ký</div>
+                            <div class="col-sm-8 text-muted small" id="ngayDangKy">—</div>
+                            <hr class="my-2">
+                            <div class="col-sm-4 text-muted small">Học phí</div>
+                            <div class="col-sm-8 fs-5 fw-bold text-success" id="hocPhi">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment method selection -->
+                <div class="card border-0 shadow-sm mb-4" id="paymentMethodCard">
+                    <div class="card-header bg-white border-0 fw-semibold">
+                        <i class="bi bi-wallet2 text-warning me-2"></i>Chọn phương thức thanh toán
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3" id="methodOptions">
+                            <div class="col-6">
+                                <label class="method-card h-100 w-100 d-flex flex-column align-items-center justify-content-center gap-2 border rounded-3 p-3 cursor-pointer" style="cursor:pointer;transition:all .2s">
+                                    <input type="radio" name="phuongThuc" value="ChuyenKhoan" class="d-none" onchange="selectMethod(this)">
+                                    <i class="bi bi-bank2 fs-2 text-primary"></i>
+                                    <span class="fw-semibold">Chuyển khoản</span>
+                                    <small class="text-muted text-center">Chuyển khoản ngân hàng qua QR hoặc số tài khoản</small>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <label class="method-card h-100 w-100 d-flex flex-column align-items-center justify-content-center gap-2 border rounded-3 p-3 cursor-pointer" style="cursor:pointer;transition:all .2s">
+                                    <input type="radio" name="phuongThuc" value="TienMat" class="d-none" onchange="selectMethod(this)">
+                                    <i class="bi bi-cash-stack fs-2 text-success"></i>
+                                    <span class="fw-semibold">Tiền mặt</span>
+                                    <small class="text-muted text-center">Nộp tiền mặt trực tiếp tại trung tâm</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Bank transfer details (shown when ChuyenKhoan selected) -->
+                        <div id="bankInfo" class="d-none mt-3">
+                            <div class="alert alert-info border-0 mb-0">
+                                <div class="row align-items-center g-3">
+                                    <div class="col-md-7">
+                                        <h6 class="fw-bold mb-2"><i class="bi bi-bank me-1"></i>Thông tin chuyển khoản</h6>
+                                        <table class="table table-sm table-borderless mb-0">
+                                            <tr>
+                                                <td class="text-muted pe-3" style="width:40%">Ngân hàng</td>
+                                                <td class="fw-semibold">Vietcombank</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Số tài khoản</td>
+                                                <td>
+                                                    <span class="fw-bold fs-5 font-monospace">1234567890</span>
+                                                    <button class="btn btn-sm btn-outline-secondary ms-2 py-0" onclick="copyText('1234567890')" title="Copy">
+                                                        <i class="bi bi-clipboard"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Chủ tài khoản</td>
+                                                <td class="fw-semibold text-uppercase">TRUNG TAM NGOAI NGU EDUCENTER</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Số tiền</td>
+                                                <td class="fw-bold text-success" id="soTienCK">—</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Nội dung CK</td>
+                                                <td>
+                                                    <span class="badge bg-warning text-dark font-monospace" id="noiDungCK">—</span>
+                                                    <button class="btn btn-sm btn-outline-secondary ms-1 py-0" onclick="copyNoiDung()" title="Copy">
+                                                        <i class="bi bi-clipboard"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-5 text-center">
+                                        <!-- VietQR real QR code -->
+                                        <div class="border rounded-3 p-2 bg-white d-inline-block">
+                                            <img id="qrCodeImg" src="" alt="QR Thanh toán"
+                                                 style="width:160px;height:160px;object-fit:contain;border-radius:4px"
+                                                 onerror="this.style.display='none';document.getElementById('qrFallback').style.display='flex'">
+                                            <div id="qrFallback" style="display:none;width:160px;height:160px;align-items:center;justify-content:center;background:#f8f9fa;border-radius:4px;flex-direction:column;gap:4px">
+                                                <i class="bi bi-qr-code fs-2 text-muted"></i>
+                                                <span style="font-size:10px;color:#999">Vietcombank<br>1234567890</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-muted small mt-1">Quét mã QR để thanh toán</div>
+                                    </div>
+                                </div>
+                                <hr class="my-2">
+                                <div class="small text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Vui lòng nhập đúng nội dung chuyển khoản để admin xác nhận nhanh hơn.
+                                    Sau khi chuyển khoản, nhấn <strong>Xác nhận đã chuyển khoản</strong> bên dưới.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cash info -->
+                        <div id="cashInfo" class="d-none mt-3">
+                            <div class="alert alert-success border-0 mb-0">
+                                <h6 class="fw-bold mb-2"><i class="bi bi-geo-alt me-1"></i>Hướng dẫn nộp tiền mặt</h6>
+                                <ul class="mb-0 small">
+                                    <li>Đến trực tiếp <strong>Trung tâm Ngoại Ngữ EduCenter</strong></li>
+                                    <li>Mang theo CMND/CCCD và thông báo đăng ký khóa học</li>
+                                    <li>Nộp học phí tại quầy lễ tân và nhận biên lai</li>
+                                    <li>Admin sẽ xác nhận thanh toán sau khi nhận tiền</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="mt-3" id="submitArea" style="display:none">
+                            <button class="btn btn-primary w-100 py-2 fw-semibold" onclick="xacNhanPhuongThuc()" id="btnXacNhan">
+                                <i class="bi bi-check-circle me-2"></i><span id="btnXacNhanText">Xác nhận</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Already submitted -->
+                <div id="daNopCard" class="d-none">
+                    <div class="card border-0 shadow-sm border-start border-4 border-warning">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="bi bi-hourglass-split text-warning fs-2"></i>
+                                <div>
+                                    <h6 class="mb-1 fw-bold">Đang chờ xác nhận thanh toán</h6>
+                                    <p class="mb-0 text-muted small">Phương thức: <strong id="phuongThucDaChon">—</strong></p>
+                                    <p class="mb-0 text-muted small">Admin sẽ xác nhận thanh toán và kích hoạt khóa học cho bạn.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: sidebar -->
+            <div class="col-lg-5">
+                <!-- Status steps -->
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-white border-0 fw-semibold">
+                        <i class="bi bi-list-check text-info me-2"></i>Quy trình đăng ký
+                    </div>
+                    <div class="card-body p-3">
+                        <div class="step-list">
+                            <div class="d-flex gap-3 mb-3">
+                                <div class="step-dot bg-success text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:28px;height:28px;font-size:12px">
+                                    <i class="bi bi-check"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold small">Đăng ký khóa học</div>
+                                    <div class="text-muted" style="font-size:.75rem">Đã hoàn thành</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3 mb-3">
+                                <div class="step-dot bg-warning text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:28px;height:28px;font-size:12px">
+                                    <span>2</span>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold small">Chọn phương thức thanh toán</div>
+                                    <div class="text-muted" style="font-size:.75rem">Đang thực hiện</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3 mb-3">
+                                <div class="step-dot bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:28px;height:28px;font-size:12px">
+                                    <span>3</span>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold small">Admin xác nhận thanh toán</div>
+                                    <div class="text-muted" style="font-size:.75rem">Chờ xử lý</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-3">
+                                <div class="step-dot bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:28px;height:28px;font-size:12px">
+                                    <span>4</span>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold small">Bắt đầu học</div>
+                                    <div class="text-muted" style="font-size:.75rem">Sau khi xác nhận</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help card -->
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body p-3">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-question-circle text-primary me-1"></i>Cần hỗ trợ?</h6>
+                        <p class="small text-muted mb-2">Liên hệ ngay nếu bạn gặp vấn đề trong quá trình thanh toán:</p>
+                        <div class="small">
+                            <div><i class="bi bi-telephone text-success me-1"></i><strong>Hotline:</strong> 1800 1234</div>
+                            <div class="mt-1"><i class="bi bi-envelope text-primary me-1"></i><strong>Email:</strong> support@educenter.vn</div>
+                            <div class="mt-1"><i class="bi bi-clock text-warning me-1"></i><strong>Giờ hỗ trợ:</strong> 8:00 – 21:00 hàng ngày</div>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="/HocVien/LichSuDangKy" class="btn btn-outline-secondary w-100 mt-3">
+                    <i class="bi bi-arrow-left me-1"></i>Quay lại lịch sử đăng ký
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.method-card { border: 2px solid #dee2e6 !important; transition: all .2s; }
+.method-card:hover { border-color: #0d6efd !important; background: #f8f9ff; }
+.method-card.selected { border-color: #0d6efd !important; background: #e8f0fe; }
+</style>
+
+<script>
+const DANGKY_ID = @dangKyId;
+let dangKyData = null;
+let profileData = null;
+
+async function loadData() {
+    try {
+        // Load registration & profile in parallel
+        const [resDK, resPf] = await Promise.all([
+            apiCall('/api/dang-ky/cua-toi'),
+            apiCall('/api/hoc-vien/cua-toi')
+        ]);
+
+        if (!resDK.ok || !resPf.ok) {
+            showError('Vui lòng đăng nhập để xem thông tin thanh toán.');
+            window.location.href = '/Auth/DangNhap';
+            return;
+        }
+
+        const allDK = await resDK.json();
+        profileData = await resPf.json();
+
+        dangKyData = allDK.find(d => d.id === DANGKY_ID);
+        if (!dangKyData) {
+            showError('Không tìm thấy thông tin đăng ký #' + DANGKY_ID);
+            return;
+        }
+
+        renderInfo();
+        document.getElementById('loadingState').classList.add('d-none');
+        document.getElementById('mainContent').classList.remove('d-none');
+    } catch(e) {
+        showError('Lỗi kết nối. Vui lòng thử lại sau.');
+    }
+}
+
+function renderInfo() {
+    const d = dangKyData;
+    const p = profileData;
+    document.getElementById('tenKhoaHoc').textContent = d.tenKhoaHoc || '—';
+    document.getElementById('maKhoaHoc').textContent = d.maKhoaHoc || '—';
+    document.getElementById('tenHocVien').textContent = p?.hoTen || '—';
+    document.getElementById('maHocVien').textContent = p?.maHocVien || '—';
+    document.getElementById('ngayDangKy').textContent = d.ngayDangKy ? new Date(d.ngayDangKy).toLocaleDateString('vi-VN') : '—';
+    const hocPhi = (d.hocPhi || 0).toLocaleString('vi-VN') + 'đ';
+    document.getElementById('hocPhi').textContent = hocPhi;
+    document.getElementById('soTienCK').textContent = hocPhi;
+
+    // Build noi dung chuyen khoan
+    const noiDung = `${p?.maHocVien || 'HV'} ${(d.maKhoaHoc || '').replace(/\s/g,'')}`;
+    document.getElementById('noiDungCK').textContent = noiDung;
+
+    // If already has phuong thuc → show waiting state
+    if (d.phuongThucThanhToan) {
+        document.getElementById('paymentMethodCard').classList.add('d-none');
+        document.getElementById('daNopCard').classList.remove('d-none');
+        const labelMap = { 'ChuyenKhoan': 'Chuyển khoản ngân hàng', 'TienMat': 'Tiền mặt tại trung tâm' };
+        document.getElementById('phuongThucDaChon').textContent = labelMap[d.phuongThucThanhToan] || d.phuongThucThanhToan;
+        return;
+    }
+
+    // If status is DangHoc → payment already confirmed
+    if (d.trangThai === 'DangHoc' || d.trangThai === 'HoanThanh') {
+        document.getElementById('paymentMethodCard').classList.add('d-none');
+        document.getElementById('daNopCard').classList.remove('d-none');
+        document.getElementById('daNopCard').innerHTML = `
+            <div class="card border-0 shadow-sm border-start border-4 border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-check-circle-fill text-success fs-2"></i>
+                        <div>
+                            <h6 class="mb-1 fw-bold text-success">Đã thanh toán thành công</h6>
+                            <p class="mb-0 text-muted small">Trạng thái: <strong>${d.trangThai === 'DangHoc' ? '📚 Đang học' : '🎓 Hoàn thành'}</strong></p>
+                            <p class="mb-0 text-muted small">Số tiền: <strong>${(d.soTienDaThanhToan||0).toLocaleString('vi-VN')}đ</strong></p>
+                            <a href="/HocVien/LichSuDangKy" class="btn btn-sm btn-outline-success mt-2">
+                                <i class="bi bi-book me-1"></i>Xem khóa học của tôi
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        return;
+    }
+
+    // If status is DaDuyet (old data before payment system) → show payment form normally
+    // ChoDuyet is the normal state for new registrations
+}
+
+function selectMethod(radio) {
+    document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+    radio.closest('.method-card').classList.add('selected');
+
+    const isBank = radio.value === 'ChuyenKhoan';
+    document.getElementById('bankInfo').classList.toggle('d-none', !isBank);
+    document.getElementById('cashInfo').classList.toggle('d-none', isBank);
+    document.getElementById('submitArea').style.display = '';
+
+    // Contextual button text
+    const btnText = isBank ? 'Xác nhận đã chuyển khoản' : 'Xác nhận sẽ nộp tiền mặt';
+    document.getElementById('btnXacNhanText').textContent = btnText;
+
+    // Build VietQR URL when bank transfer selected
+    if (isBank && dangKyData) {
+        const soTien = dangKyData.hocPhi || 0;
+        const noiDung = encodeURIComponent(document.getElementById('noiDungCK').textContent);
+        const accName = encodeURIComponent('TRUNG TAM NGOAI NGU EDUCENTER');
+        const qrUrl = `https://img.vietqr.io/image/VCB-1234567890-compact2.png?amount=${soTien}&addInfo=${noiDung}&accountName=${accName}`;
+        const img = document.getElementById('qrCodeImg');
+        img.style.display = '';
+        document.getElementById('qrFallback').style.display = 'none';
+        img.src = qrUrl;
+    }
+}
+
+async function xacNhanPhuongThuc() {
+    const selected = document.querySelector('input[name="phuongThuc"]:checked');
+    if (!selected) { showToast('warning', 'Vui lòng chọn phương thức thanh toán'); return; }
+
+    const btn = document.getElementById('btnXacNhan');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý...';
+
+    try {
+        const res = await apiCall(`/api/dang-ky/${DANGKY_ID}/chon-phuong-thuc`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phuongThuc: selected.value })
+        });
+
+        const data = await res.json();
+        const labelMap = { 'ChuyenKhoan': 'Chuyển khoản ngân hàng', 'TienMat': 'Tiền mặt tại trung tâm' };
+        if (res.ok) {
+            showToast('success', 'Đã xác nhận! Admin sẽ kiểm tra và kích hoạt khóa học.');
+            document.getElementById('paymentMethodCard').classList.add('d-none');
+            document.getElementById('daNopCard').classList.remove('d-none');
+            document.getElementById('phuongThucDaChon').textContent = labelMap[selected.value] || selected.value;
+        } else {
+            const btnText = selected.value === 'ChuyenKhoan' ? 'Xác nhận đã chuyển khoản' : 'Xác nhận sẽ nộp tiền mặt';
+            showToast('danger', data.message || 'Lỗi xử lý');
+            btn.disabled = false;
+            btn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${btnText}`;
+        }
+    } catch(e) {
+        const selected2 = document.querySelector('input[name="phuongThuc"]:checked');
+        const btnText2 = selected2?.value === 'ChuyenKhoan' ? 'Xác nhận đã chuyển khoản' : 'Xác nhận sẽ nộp tiền mặt';
+        showToast('danger', 'Lỗi kết nối');
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${btnText2}`;
+    }
+}
+
+function copyText(text) {
+    navigator.clipboard.writeText(text).then(() => showToast('success', 'Đã copy: ' + text));
+}
+
+function copyNoiDung() {
+    const text = document.getElementById('noiDungCK').textContent;
+    navigator.clipboard.writeText(text).then(() => showToast('success', 'Đã copy nội dung chuyển khoản'));
+}
+
+function showError(msg) {
+    document.getElementById('loadingState').classList.add('d-none');
+    document.getElementById('errorMsg').textContent = msg;
+    document.getElementById('errorState').classList.remove('d-none');
+}
+
+document.addEventListener('DOMContentLoaded', loadData);
+</script>

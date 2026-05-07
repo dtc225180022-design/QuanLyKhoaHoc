@@ -1,0 +1,171 @@
+html { font-size: 14px; }
+@media (min-width: 768px) { html { font-size: 16px; } }
+
+body { background-color: #f8f9fa; }
+
+/* Hero */
+.hero-section {
+    background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 50%, #198754 100%);
+    min-height: 340px;
+    display: flex;
+    align-items: center;
+}
+
+/* Course card hover */
+.course-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px;
+}
+.course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+}
+
+/* Navbar active */
+.navbar-nav .nav-link.active { font-weight: 600; }
+
+/* Toast container */
+#toastContainer {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 280px;
+}
+
+/* Table improvements */
+.table th { font-weight: 600; font-size: 0.875rem; }
+
+/* Badge pill */
+.badge { border-radius: 6px; }
+
+/* Card header clean */
+.card { border-radius: 10px; }
+.card-header { border-radius: 10px 10px 0 0 !important; }
+
+/* Spinner center */
+.loading-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+/* Scrollbar thin */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
+
+/* Feature icon */
+.feature-icon {
+    width: 70px; height: 70px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* Admin sidebar tabs */
+.nav-tabs .nav-link { color: #495057; font-weight: 500; }
+.nav-tabs .nav-link.active { font-weight: 600; color: #0d6efd; }
+
+/* Status badges */
+.badge-status-mo { background-color: #198754; }
+.badge-status-dang { background-color: #0d6efd; }
+.badge-status-ket { background-color: #6c757d; }
+.badge-status-huy { background-color: #dc3545; }
+
+/* Avatar circle (navbar) */
+.avatar-circle {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+/* Language badge */
+.badge-lang {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .3px;
+}
+
+/* Color dot */
+.dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Timetable cell */
+.lich-cell {
+    transition: transform 0.15s;
+}
+.lich-cell:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Giảng viên card */
+.gv-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px;
+}
+.gv-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+}
+.gv-avatar {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #0d6efd22, #0dcaf022);
+    color: #0d6efd;
+    border: 2px solid #0d6efd33;
+}
+
+/* Lop item in GV dashboard */
+.lop-item {
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    border-radius: 8px;
+    border: 2px solid transparent;
+}
+.lop-item:hover { background: #f0f7ff; border-color: #0d6efd44; }
+.lop-item.active  { background: #e7f1ff; border-color: #0d6efd; }
+
+/* Hover white text */
+.hover-white:hover { color: #fff !important; }
+
+/* Today highlight in timetable */
+.table-warning-light { background: #fffbeb; }
+
+/* Stat card icon circle */
+.stat-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+/* Progress bar thin */
+.progress-xs { height: 5px; border-radius: 3px; }
+
+/* Card hover lift */
+.card-hover {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.09) !important;
+}

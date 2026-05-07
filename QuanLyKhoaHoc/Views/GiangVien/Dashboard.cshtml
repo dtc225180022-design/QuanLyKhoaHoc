@@ -1,0 +1,395 @@
+@{
+    ViewData["Title"] = "Dashboard Giảng Viên";
+    Layout = "_Layout";
+}
+
+<div class="container-fluid py-4 px-4">
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="gv-avatar">👨‍🏫</div>
+        <div>
+            <h4 class="mb-0 fw-bold" id="gvHoTen">Đang tải...</h4>
+            <p class="text-muted mb-0 small" id="gvChuyenNganh">Giảng viên</p>
+        </div>
+        <div class="ms-auto">
+            <a href="/GiangVien" class="btn btn-outline-primary btn-sm"><i class="bi bi-people me-1"></i>Trang giảng viên</a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs mb-4" id="gvTabs">
+        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tabLop"><i class="bi bi-book me-1"></i>Lớp dạy</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabDiem"><i class="bi bi-pencil-square me-1"></i>Nhập điểm</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabDiemDanh"><i class="bi bi-check2-square me-1"></i>Điểm danh</a></li>
+        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tabMeet"><i class="bi bi-camera-video me-1"></i>Link Meet</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- LỚP DẠY -->
+        <div class="tab-pane fade show active" id="tabLop">
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="display-6 fw-bold text-primary" id="statSoLop">—</div><small class="text-muted">Lớp đang dạy</small></div></div>
+                <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="display-6 fw-bold text-success" id="statTongHV">—</div><small class="text-muted">Tổng học viên</small></div></div>
+                <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="display-6 fw-bold text-warning" id="statBuoiHomNay">—</div><small class="text-muted">Buổi hôm nay</small></div></div>
+                <div class="col-6 col-md-3"><div class="card border-0 shadow-sm text-center p-3"><div class="display-6 fw-bold text-info" id="statBuoiTuan">—</div><small class="text-muted">Buổi sắp tới</small></div></div>
+            </div>
+            <div class="row g-3" id="lopCards"></div>
+        </div>
+
+        <!-- NHẬP ĐIỂM -->
+        <div class="tab-pane fade" id="tabDiem">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white fw-semibold small border-0 pb-0">Chọn lớp</div>
+                        <div class="list-group list-group-flush" id="diemLopList"></div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div id="diemContent" class="text-center text-muted py-5">
+                        <i class="bi bi-arrow-left-circle fs-1 d-block mb-2"></i>Chọn lớp để nhập điểm
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ĐIỂM DANH -->
+        <div class="tab-pane fade" id="tabDiemDanh">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white fw-semibold small border-0 pb-0">Chọn lớp</div>
+                        <div class="list-group list-group-flush" id="ddLopList"></div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div id="ddContent" class="text-center text-muted py-5">
+                        <i class="bi bi-arrow-left-circle fs-1 d-block mb-2"></i>Chọn lớp để điểm danh
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LINK MEET -->
+        <div class="tab-pane fade" id="tabMeet">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white fw-semibold small border-0 pb-0">Chọn lớp</div>
+                        <div class="list-group list-group-flush" id="meetLopList"></div>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div id="meetContent" class="text-center text-muted py-5">
+                        <i class="bi bi-arrow-left-circle fs-1 d-block mb-2"></i>Chọn lớp để quản lý link Meet
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal nhập điểm -->
+<div class="modal fade" id="modalDiem" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil-square text-primary me-2"></i>Nhập điểm</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info small mb-3">
+                    <i class="bi bi-info-circle me-2"></i><strong>Công thức:</strong> Tổng kết = Chuyên cần×10% + Giữa kỳ×30% + Cuối kỳ×60%
+                </div>
+                <div class="mb-3 row align-items-center">
+                    <label class="col-sm-4 col-form-label small fw-semibold">Chuyên cần (10%)</label>
+                    <div class="col-sm-3"><input type="number" id="inp_cc" class="form-control" readonly placeholder="Tự động từ điểm danh"></div>
+                    <small class="col-sm-5 text-muted">Tự tính từ điểm danh</small>
+                </div>
+                <div class="mb-3 row align-items-center">
+                    <label class="col-sm-4 col-form-label small fw-semibold">Giữa kỳ (30%) <span class="text-danger">*</span></label>
+                    <div class="col-sm-3"><input type="number" id="inp_gk" class="form-control" min="0" max="10" step="0.1" placeholder="0-10" oninput="tinhPreview()"></div>
+                </div>
+                <div class="mb-3 row align-items-center">
+                    <label class="col-sm-4 col-form-label small fw-semibold">Cuối kỳ (60%) <span class="text-danger">*</span></label>
+                    <div class="col-sm-3"><input type="number" id="inp_ck" class="form-control" min="0" max="10" step="0.1" placeholder="0-10" oninput="tinhPreview()"></div>
+                </div>
+                <div class="mb-3 row">
+                    <label class="col-sm-4 col-form-label small fw-semibold">Nhận xét</label>
+                    <div class="col-sm-8"><textarea id="inp_nx" class="form-control" rows="2" placeholder="Nhận xét về học viên..."></textarea></div>
+                </div>
+                <div class="alert alert-success small" id="previewDiem" style="display:none">
+                    <strong>Dự tính tổng kết:</strong> <span id="previewVal" class="fw-bold fs-5"></span>/100 &nbsp;→&nbsp; Xếp loại: <span id="previewXepLoai" class="fw-bold"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary btn-sm" onclick="luuDiem()"><i class="bi bi-check2 me-1"></i>Lưu điểm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let allLop = [];
+let currentDiemId = null;
+let currentKhoaHocId = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('jwt_token');
+    const vaiTro = localStorage.getItem('vai_tro');
+    if (!token || (vaiTro !== 'GiangVien' && vaiTro !== 'Admin')) {
+        window.location.href = '/Auth/DangNhap'; return;
+    }
+    document.getElementById('gvHoTen').textContent = localStorage.getItem('ho_ten') || 'Giảng viên';
+    await loadLop();
+});
+
+async function loadLop() {
+    const res = await apiCall('/api/diem/lop-cua-toi');
+    allLop = await res.json();
+    document.getElementById('statSoLop').textContent = allLop.length;
+    document.getElementById('statTongHV').textContent = allLop.reduce((s, l) => s + (l.soHocVien || 0), 0);
+
+    const buoiRes = await apiCall('/api/buoi-hoc/sap-toi');
+    if (buoiRes.ok) {
+        const buois = await buoiRes.json();
+        const todayStr = new Date().toLocaleDateString('vi-VN');
+        document.getElementById('statBuoiHomNay').textContent = buois.filter(b => b.ngayHoc === todayStr).length;
+        document.getElementById('statBuoiTuan').textContent = buois.length;
+    }
+
+    renderLopCards();
+    renderSidebar('diemLopList', loadDiem);
+    renderSidebar('ddLopList', loadDiemDanh);
+    renderSidebar('meetLopList', loadMeet);
+}
+
+function renderLopCards() {
+    const colors = { 'Tiếng Anh':'#0d6efd','Tiếng Nhật':'#dc3545','Tiếng Hàn':'#fd7e14','Tiếng Trung':'#198754','Tiếng Pháp':'#6f42c1' };
+    document.getElementById('lopCards').innerHTML = allLop.map(l => {
+        const c = colors[l.ngonNgu] || '#6c757d';
+        const ngayBD = l.ngayBatDau ? new Date(l.ngayBatDau).toLocaleDateString('vi-VN') : '—';
+        const ngayKT = l.ngayKetThuc ? new Date(l.ngayKetThuc).toLocaleDateString('vi-VN') : '—';
+        return `<div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm gv-card h-100" style="border-left:4px solid ${c}!important">
+                <div class="card-body">
+                    <div class="d-flex gap-2 mb-2">
+                        <span class="badge text-white" style="background:${c}">${l.ngonNgu}</span>
+                        <span class="badge bg-light text-dark border">${l.trinhDo}</span>
+                    </div>
+                    <h6 class="fw-bold">${l.tenKhoaHoc}</h6>
+                    <div class="text-muted small mb-1"><i class="bi bi-people me-1"></i>${l.soHocVien} học viên</div>
+                    <div class="text-muted small mb-3"><i class="bi bi-calendar me-1"></i>${ngayBD} → ${ngayKT}</div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-primary flex-fill" onclick="clickTab('tabDiem',${l.khoaHocId})"><i class="bi bi-pencil me-1"></i>Điểm</button>
+                        <button class="btn btn-sm btn-outline-success flex-fill" onclick="clickTab('tabDiemDanh',${l.khoaHocId})"><i class="bi bi-check2 me-1"></i>Điểm danh</button>
+                        <button class="btn btn-sm btn-outline-info flex-fill" onclick="clickTab('tabMeet',${l.khoaHocId})"><i class="bi bi-camera-video me-1"></i>Meet</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }).join('') || '<div class="col"><p class="text-muted py-3">Chưa được phân công lớp nào.</p></div>';
+}
+
+function clickTab(tabId, khoaHocId) {
+    document.querySelector(`a[href="#${tabId}"]`).click();
+    setTimeout(() => {
+        const el = document.querySelector(`[data-id="${khoaHocId}"]`);
+        if (el) el.click();
+    }, 250);
+}
+
+function renderSidebar(elId, fn) {
+    document.getElementById(elId).innerHTML = allLop.map(l =>
+        `<button class="list-group-item list-group-item-action lop-item py-2 px-3 text-start" data-id="${l.khoaHocId}" onclick="${fn.name}(${l.khoaHocId}, this)">
+            <div class="fw-semibold small">${l.tenKhoaHoc}</div>
+            <small class="text-muted">${l.ngonNgu} · ${l.soHocVien} HV</small>
+        </button>`
+    ).join('');
+}
+
+// ─── NHẬP ĐIỂM ───────────────────────────────────────────
+async function loadDiem(khoaHocId, el) {
+    currentKhoaHocId = khoaHocId;
+    document.querySelectorAll('#diemLopList .lop-item').forEach(b => b.classList.remove('active'));
+    el?.classList.add('active');
+    const res = await apiCall(`/api/diem/khoa-hoc/${khoaHocId}`);
+    const list = await res.json();
+    const xc = { 'Xuất sắc':'success','Giỏi':'primary','Khá':'info','Trung bình':'warning','Không đạt':'danger' };
+    document.getElementById('diemContent').innerHTML = `
+        <div class="table-responsive">
+        <table class="table table-hover align-middle small">
+            <thead class="table-light"><tr>
+                <th>Học viên</th>
+                <th class="text-center">Chuyên cần<br><small class="text-muted fw-normal">10%</small></th>
+                <th class="text-center">Giữa kỳ<br><small class="text-muted fw-normal">30%</small></th>
+                <th class="text-center">Cuối kỳ<br><small class="text-muted fw-normal">60%</small></th>
+                <th class="text-center">Tổng kết</th>
+                <th class="text-center">Xếp loại</th>
+                <th></th>
+            </tr></thead>
+            <tbody>${list.map(d => `<tr>
+                <td><div class="fw-semibold">${d.tenHocVien}</div><small class="text-muted">${d.maHocVien}</small></td>
+                <td class="text-center">${d.diemChuyenCan != null ? d.diemChuyenCan.toFixed(1) : '<span class="text-muted">—</span>'}</td>
+                <td class="text-center">${d.diemGiuaKy != null ? d.diemGiuaKy.toFixed(1) : '<span class="text-muted">—</span>'}</td>
+                <td class="text-center">${d.diemCuoiKy != null ? d.diemCuoiKy.toFixed(1) : '<span class="text-muted">—</span>'}</td>
+                <td class="text-center fw-bold">${d.diemTrungBinh != null ? d.diemTrungBinh.toFixed(2) : '<span class="text-muted">—</span>'}</td>
+                <td class="text-center">${d.xepLoai ? `<span class="badge bg-${xc[d.xepLoai]||'secondary'}">${d.xepLoai}</span>` : '<span class="text-muted">—</span>'}</td>
+                <td><button class="btn btn-sm btn-outline-primary" onclick="moModalDiem(${d.id},${d.diemChuyenCan||0},${d.diemGiuaKy||'null'},${d.diemCuoiKy||'null'},'${(d.nhanXet||'').replace(/'/g,"\\'")}')">
+                    <i class="bi bi-pencil"></i></button></td>
+            </tr>`).join('')}</tbody>
+        </table></div>`;
+}
+
+function moModalDiem(id, cc, gk, ck, nx) {
+    currentDiemId = id;
+    document.getElementById('inp_cc').value = cc || '';
+    document.getElementById('inp_gk').value = gk !== 'null' ? gk : '';
+    document.getElementById('inp_ck').value = ck !== 'null' ? ck : '';
+    document.getElementById('inp_nx').value = nx || '';
+    tinhPreview();
+    new bootstrap.Modal(document.getElementById('modalDiem')).show();
+}
+
+function tinhPreview() {
+    const cc = parseFloat(document.getElementById('inp_cc').value) || 0;
+    const gk = parseFloat(document.getElementById('inp_gk').value);
+    const ck = parseFloat(document.getElementById('inp_ck').value);
+    if (!isNaN(gk) && !isNaN(ck)) {
+        const tk = (cc * 1 + gk * 3 + ck * 6).toFixed(1);
+        const xl = tk >= 90 ? 'Xuất sắc' : tk >= 80 ? 'Giỏi' : tk >= 65 ? 'Khá' : tk >= 50 ? 'Trung bình' : 'Không đạt';
+        const xc = { 'Xuất sắc':'success','Giỏi':'primary','Khá':'info','Trung bình':'warning','Không đạt':'danger' };
+        document.getElementById('previewVal').textContent = tk;
+        document.getElementById('previewXepLoai').textContent = xl;
+        document.getElementById('previewXepLoai').className = `fw-bold text-${xc[xl]}`;
+        document.getElementById('previewDiem').style.display = '';
+        document.getElementById('previewDiem').className = `alert alert-${xc[xl] === 'danger' ? 'danger' : 'success'} small`;
+    }
+}
+
+async function luuDiem() {
+    const gk = parseFloat(document.getElementById('inp_gk').value);
+    const ck = parseFloat(document.getElementById('inp_ck').value);
+    if (isNaN(gk) || isNaN(ck)) { showToast('warning','Vui lòng nhập đủ điểm giữa kỳ và cuối kỳ'); return; }
+    const res = await apiCall(`/api/diem/${currentDiemId}`, { method:'PUT', body:{ diemGiuaKy: gk, diemCuoiKy: ck, nhanXet: document.getElementById('inp_nx').value, daHoanThanh: true } });
+    if (res.ok) {
+        showToast('success','✅ Lưu điểm thành công!');
+        bootstrap.Modal.getInstance(document.getElementById('modalDiem')).hide();
+        loadDiem(currentKhoaHocId);
+    } else showToast('danger','Lưu điểm thất bại!');
+}
+
+// ─── ĐIỂM DANH ───────────────────────────────────────────
+async function loadDiemDanh(khoaHocId, el) {
+    currentKhoaHocId = khoaHocId;
+    document.querySelectorAll('#ddLopList .lop-item').forEach(b => b.classList.remove('active'));
+    el?.classList.add('active');
+    const res = await apiCall(`/api/buoi-hoc/theo-khoa-hoc/${khoaHocId}`);
+    const buois = await res.json();
+    document.getElementById('ddContent').innerHTML = `
+        <div class="mb-3">
+            <label class="form-label small fw-semibold">Chọn buổi học để điểm danh</label>
+            <select class="form-select" id="selBuoi" onchange="loadDiemDanhBuoi(this.value)">
+                <option value="">-- Chọn buổi --</option>
+                ${buois.map(b => `<option value="${b.id}">Buổi ${b.soBuoiThuTu} – ${b.ngayHoc} (${b.gioBatDau}–${b.gioKetThuc}) ${b.dadienRa ? '✅' : '📅'}</option>`).join('')}
+            </select>
+        </div>
+        <div id="diemDanhTable"></div>
+        <div class="mt-3" id="thongKeCC"></div>`;
+}
+
+async function loadDiemDanhBuoi(buoiId) {
+    if (!buoiId) return;
+    const res = await apiCall(`/api/diem-danh/buoi/${buoiId}`);
+    const data = await res.json();
+    const trangThaiMap = { 'CoMat':'1','Vang':'2','VangCoPhep':'3','HocOnline':'4','ChuaDiemDanh':'1' };
+    document.getElementById('diemDanhTable').innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-semibold small">Buổi ${data.soBuoiThuTu} – ${data.ngayHoc} | ${data.tongSoHocVien} học viên</span>
+            <button class="btn btn-primary btn-sm" onclick="luuDiemDanh(${data.buoiHocId})"><i class="bi bi-save me-1"></i>Lưu điểm danh</button>
+        </div>
+        <div class="table-responsive">
+        <table class="table table-hover align-middle small">
+            <thead class="table-light"><tr><th>#</th><th>Học viên</th><th style="min-width:180px">Trạng thái</th><th>Ghi chú</th></tr></thead>
+            <tbody id="tbodyDD">
+                ${(data.danhSach||[]).map((hv,i) => `<tr>
+                    <td class="text-muted">${i+1}</td>
+                    <td><div class="fw-semibold">${hv.hoTen}</div><small class="text-muted">${hv.maHocVien}</small></td>
+                    <td><select class="form-select form-select-sm dd-trang-thai" data-dk="${hv.dangKyId}">
+                        <option value="1">✅ Có mặt</option>
+                        <option value="2">❌ Vắng</option>
+                        <option value="3">📋 Vắng có phép</option>
+                        <option value="4">💻 Học online</option>
+                    </select></td>
+                    <td><input type="text" class="form-control form-control-sm dd-ghi-chu" data-dk="${hv.dangKyId}" placeholder="Ghi chú..."></td>
+                </tr>`).join('')}
+            </tbody>
+        </table></div>`;
+    // Set giá trị hiện tại
+    (data.danhSach||[]).forEach(hv => {
+        const sel = document.querySelector(`.dd-trang-thai[data-dk="${hv.dangKyId}"]`);
+        if (sel) sel.value = trangThaiMap[hv.trangThai] || '1';
+    });
+}
+
+async function luuDiemDanh(buoiId) {
+    const rows = document.querySelectorAll('#tbodyDD tr');
+    const danhSach = Array.from(rows).map(r => ({
+        dangKyId: parseInt(r.querySelector('.dd-trang-thai').dataset.dk),
+        trangThai: parseInt(r.querySelector('.dd-trang-thai').value),
+        ghiChu: r.querySelector('.dd-ghi-chu').value
+    }));
+    const res = await apiCall(`/api/diem-danh/buoi/${buoiId}`, { method:'POST', body: danhSach });
+    if (res.ok) {
+        showToast('success','✅ Lưu điểm danh thành công! Chuyên cần đã được cập nhật.');
+        // Reload sau khi lưu
+        setTimeout(() => {
+            const sel = document.getElementById('selBuoi');
+            if (sel) loadDiemDanhBuoi(sel.value);
+        }, 800);
+    } else showToast('danger','Lưu thất bại!');
+}
+
+// ─── LINK MEET ───────────────────────────────────────────
+async function loadMeet(khoaHocId, el) {
+    currentKhoaHocId = khoaHocId;
+    document.querySelectorAll('#meetLopList .lop-item').forEach(b => b.classList.remove('active'));
+    el?.classList.add('active');
+    const res = await apiCall(`/api/buoi-hoc/theo-khoa-hoc/${khoaHocId}`);
+    const buois = await res.json();
+    document.getElementById('meetContent').innerHTML = `
+        <div class="fw-semibold mb-3 small">Quản lý link Google Meet cho từng buổi học</div>
+        <div class="table-responsive">
+        <table class="table table-hover align-middle small">
+            <thead class="table-light"><tr><th>Buổi</th><th>Ngày</th><th>Giờ</th><th>Hình thức</th><th style="min-width:220px">Link Meet</th><th></th></tr></thead>
+            <tbody>
+                ${buois.map(b => `<tr>
+                    <td class="fw-semibold">#${b.soBuoiThuTu}</td>
+                    <td>${b.ngayHoc}</td>
+                    <td class="text-muted">${b.gioBatDau}–${b.gioKetThuc}</td>
+                    <td><span class="badge ${b.hinhThuc === 'Online' ? 'bg-primary' : b.hinhThuc === 'KetHop' ? 'bg-info' : 'bg-secondary'}">${b.hinhThuc === 'KetHop' ? 'Kết hợp' : b.hinhThuc}</span></td>
+                    <td><input type="text" class="form-control form-control-sm meet-link" data-buoi="${b.id}" value="${b.linkMeet || ''}" placeholder="https://meet.google.com/..."></td>
+                    <td class="d-flex gap-1">
+                        <button class="btn btn-sm btn-outline-success" title="Lưu" onclick="capNhatLink(${b.id})"><i class="bi bi-save"></i></button>
+                        ${b.linkMeet ? `<a href="${b.linkMeet}" target="_blank" class="btn btn-sm btn-outline-primary" title="Mở Meet"><i class="bi bi-box-arrow-up-right"></i></a>` : ''}
+                    </td>
+                </tr>`).join('')}
+            </tbody>
+        </table></div>`;
+}
+
+async function capNhatLink(buoiId) {
+    const input = document.querySelector(`.meet-link[data-buoi="${buoiId}"]`);
+    const link = input.value.trim();
+    const res = await apiCall(`/api/buoi-hoc/${buoiId}/link-meet`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(link)
+    });
+    if (res.ok) showToast('success','✅ Đã cập nhật link Meet!');
+    else showToast('danger','Cập nhật thất bại!');
+}
+</script>
+}

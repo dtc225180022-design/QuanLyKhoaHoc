@@ -1,0 +1,472 @@
+@{
+    ViewData["Title"] = "Hồ sơ giảng viên";
+    Layout = "_Layout";
+}
+
+<div class="container py-4" style="max-width:860px">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="stat-icon bg-primary bg-opacity-10"><i class="bi bi-person-badge text-primary fs-4"></i></div>
+        <div>
+            <h4 class="mb-0 fw-bold">Hồ sơ giảng viên</h4>
+            <p class="text-muted mb-0 small">Quản lý thông tin chuyên môn và bảo mật tài khoản</p>
+        </div>
+        <div class="ms-auto">
+            <a href="/GiangVien/Dashboard" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loadingState" class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+        <p class="text-muted mt-2">Đang tải hồ sơ...</p>
+    </div>
+
+    <div id="mainContent" class="d-none">
+        <div class="row g-4">
+            <!-- Avatar & tóm tắt -->
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm text-center p-4">
+                    <!-- Avatar with upload button -->
+                    <div class="position-relative d-inline-block mx-auto mb-3" style="width:80px;height:80px">
+                        <div id="profileAvatar" class="gv-avatar" style="width:80px;height:80px;font-size:2rem">?</div>
+                        <button type="button" onclick="moUploadAvatarGV()" title="Đổi ảnh đại diện"
+                            class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle p-0"
+                            style="width:26px;height:26px;line-height:1">
+                            <i class="bi bi-camera-fill" style="font-size:.75rem"></i>
+                        </button>
+                    </div>
+                    <h5 class="fw-bold mb-0" id="profileName">—</h5>
+                    <small class="text-muted" id="profileChuyenNganh">—</small>
+                    <hr>
+                    <div class="text-start small">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-person-badge text-primary"></i>
+                            <span class="text-muted">Mã GV:</span>
+                            <strong id="profileMaGV">—</strong>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-mortarboard text-warning"></i>
+                            <span class="text-muted">Bằng cấp:</span>
+                            <strong id="profileBangCap">—</strong>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="bi bi-clock-history text-info"></i>
+                            <span class="text-muted">Kinh nghiệm:</span>
+                            <strong id="profileKinhNghiem">—</strong>
+                            <span class="text-muted">năm</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-book-half text-success"></i>
+                            <span class="text-muted">Lớp dạy:</span>
+                            <strong id="profileSoLop">—</strong>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <span class="badge bg-primary px-3 py-2">👨‍🏫 Giảng viên EduCenter</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form chỉnh sửa -->
+            <div class="col-md-8">
+                <ul class="nav nav-tabs mb-3" id="profileTabs">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabThongTin">
+                            <i class="bi bi-person me-1"></i>Thông tin
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabGioiThieu">
+                            <i class="bi bi-file-text me-1"></i>Giới thiệu
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabBaoMat">
+                            <i class="bi bi-shield-lock me-1"></i>Bảo mật
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- Tab thông tin -->
+                    <div class="tab-pane fade show active" id="tabThongTin">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <form id="formThongTin">
+                                    <div class="row g-3">
+                                        <div class="col-sm-6">
+                                            <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="inpHoTen" required maxlength="100">
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="form-label fw-semibold">Email</label>
+                                            <input type="email" class="form-control bg-light" id="inpEmail" readonly>
+                                            <small class="text-muted">Email không thể thay đổi</small>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="form-label fw-semibold">Số điện thoại</label>
+                                            <input type="tel" class="form-control" id="inpSoDT" maxlength="20" placeholder="0xxx xxx xxx">
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="form-label fw-semibold">Chuyên ngành <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="inpChuyenNganh">
+                                                <option value="">-- Chọn chuyên ngành --</option>
+                                                <option value="Tiếng Anh">Tiếng Anh</option>
+                                                <option value="Tiếng Nhật">Tiếng Nhật</option>
+                                                <option value="Tiếng Hàn">Tiếng Hàn</option>
+                                                <option value="Tiếng Trung">Tiếng Trung</option>
+                                                <option value="Tiếng Pháp">Tiếng Pháp</option>
+                                                <option value="Đa ngôn ngữ">Đa ngôn ngữ</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="form-label fw-semibold">Bằng cấp</label>
+                                            <select class="form-select" id="inpBangCap">
+                                                <option value="">-- Chọn --</option>
+                                                <option value="Cử nhân">Cử nhân</option>
+                                                <option value="Thạc sĩ">Thạc sĩ</option>
+                                                <option value="Tiến sĩ">Tiến sĩ</option>
+                                                <option value="Giáo sư">Giáo sư</option>
+                                                <option value="Chứng chỉ quốc tế">Chứng chỉ quốc tế</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <label class="form-label fw-semibold">Số năm kinh nghiệm</label>
+                                            <input type="number" class="form-control" id="inpNamKN" min="0" max="50" placeholder="0">
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check2 me-1"></i>Lưu thay đổi
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="loadProfile()">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>Hủy
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab giới thiệu -->
+                    <div class="tab-pane fade" id="tabGioiThieu">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-file-person me-2 text-primary"></i>Giới thiệu bản thân</h6>
+                                <p class="text-muted small mb-3">Thông tin này sẽ được hiển thị công khai trên trang danh sách giảng viên.</p>
+                                <form id="formGioiThieu">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Nội dung giới thiệu</label>
+                                        <textarea class="form-control" id="inpGioiThieu" rows="6" maxlength="500"
+                                            placeholder="Ví dụ: Tôi có hơn 5 năm kinh nghiệm giảng dạy tiếng Anh tại các trung tâm lớn. Tốt nghiệp Thạc sĩ Ngôn ngữ học tại Đại học Quốc gia..."></textarea>
+                                        <div class="d-flex justify-content-between mt-1">
+                                            <small class="text-muted">Tối đa 500 ký tự</small>
+                                            <small class="text-muted" id="charCount">0/500</small>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-check2 me-1"></i>Lưu giới thiệu
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" onclick="loadProfile()">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>Hủy
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab bảo mật -->
+                    <div class="tab-pane fade" id="tabBaoMat">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body p-4">
+                                <h6 class="fw-bold mb-3"><i class="bi bi-key me-2 text-warning"></i>Đổi mật khẩu</h6>
+                                <form id="formMatKhau">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Mật khẩu hiện tại <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="inpMKCu" required placeholder="Nhập mật khẩu hiện tại">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePwd('inpMKCu',this)"><i class="bi bi-eye"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Mật khẩu mới <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="inpMKMoi" required minlength="6" placeholder="Tối thiểu 6 ký tự">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePwd('inpMKMoi',this)"><i class="bi bi-eye"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label class="form-label fw-semibold">Xác nhận mật khẩu mới <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="password" class="form-control" id="inpMKXacNhan" required placeholder="Nhập lại mật khẩu mới">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="togglePwd('inpMKXacNhan',this)"><i class="bi bi-eye"></i></button>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="bi bi-shield-check me-1"></i>Đổi mật khẩu
+                                    </button>
+                                </form>
+
+                                <hr class="my-4">
+
+                                <div class="alert alert-info d-flex gap-3 align-items-start">
+                                    <i class="bi bi-info-circle-fill text-info mt-1 flex-shrink-0"></i>
+                                    <div class="small">
+                                        <strong>Lưu ý bảo mật:</strong><br>
+                                        Sử dụng mật khẩu mạnh gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
+                                        Không chia sẻ tài khoản với người khác.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+let profileData = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('jwt_token');
+    const vaiTro = localStorage.getItem('vai_tro');
+    if (!token) { window.location.href = '/Auth/DangNhap'; return; }
+    if (vaiTro !== 'GiangVien') { window.location.href = '/HocVien/HoSo'; return; }
+    await loadProfile();
+
+    // Char count
+    const inpGT = document.getElementById('inpGioiThieu');
+    inpGT.addEventListener('input', () => {
+        document.getElementById('charCount').textContent = inpGT.value.length + '/500';
+    });
+});
+
+async function loadProfile() {
+    document.getElementById('loadingState').classList.remove('d-none');
+    document.getElementById('mainContent').classList.add('d-none');
+
+    const res = await apiCall('/api/giang-vien/cua-toi');
+    document.getElementById('loadingState').classList.add('d-none');
+    if (!res.ok) { showToast('danger', 'Không thể tải hồ sơ'); return; }
+
+    profileData = await res.json();
+    renderProfile(profileData);
+    document.getElementById('mainContent').classList.remove('d-none');
+}
+
+function renderProfile(d) {
+    // Avatar
+    const avatarEl = document.getElementById('profileAvatar');
+    if (d.anhDaiDien) {
+        avatarEl.innerHTML = `<img src="${d.anhDaiDien}" class="rounded-circle w-100 h-100 object-fit-cover" alt="avatar">`;
+        avatarEl.className = 'rounded-circle overflow-hidden';
+        avatarEl.style.cssText = 'width:80px;height:80px';
+    } else {
+        const w = (d.hoTen || 'GV').split(' ');
+        const initials = w.length >= 2 ? (w[w.length-2][0] + w[w.length-1][0]).toUpperCase() : w[0][0].toUpperCase();
+        avatarEl.textContent = initials;
+        avatarEl.className = 'gv-avatar';
+        avatarEl.style.cssText = 'width:80px;height:80px;font-size:2rem';
+    }
+    document.getElementById('profileName').textContent = d.hoTen || '—';
+    document.getElementById('profileChuyenNganh').textContent = d.chuyenNganh || '—';
+    document.getElementById('profileMaGV').textContent = d.maGiangVien || '—';
+    document.getElementById('profileBangCap').textContent = d.bangCap || '—';
+    document.getElementById('profileKinhNghiem').textContent = d.namKinhNghiem ?? 0;
+    document.getElementById('profileSoLop').textContent = d.soKhoaHocPhuTrach ?? 0;
+
+    // Form
+    document.getElementById('inpHoTen').value = d.hoTen || '';
+    document.getElementById('inpEmail').value = d.email || '';
+    document.getElementById('inpSoDT').value = d.soDienThoai || '';
+    document.getElementById('inpChuyenNganh').value = d.chuyenNganh || '';
+    document.getElementById('inpBangCap').value = d.bangCap || '';
+    document.getElementById('inpNamKN').value = d.namKinhNghiem ?? 0;
+    document.getElementById('inpGioiThieu').value = d.gioiThieu || '';
+    document.getElementById('charCount').textContent = (d.gioiThieu || '').length + '/500';
+}
+
+async function saveGVProfile(body) {
+    return apiCall('/api/giang-vien/cua-toi', { method: 'PUT', body });
+}
+
+document.getElementById('formThongTin').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('[type=submit]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang lưu...';
+
+    const body = {
+        hoTen: document.getElementById('inpHoTen').value.trim(),
+        soDienThoai: document.getElementById('inpSoDT').value.trim(),
+        chuyenNganh: document.getElementById('inpChuyenNganh').value,
+        bangCap: document.getElementById('inpBangCap').value,
+        namKinhNghiem: parseInt(document.getElementById('inpNamKN').value) || 0,
+        gioiThieu: document.getElementById('inpGioiThieu').value.trim()
+    };
+
+    const res = await saveGVProfile(body);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Lưu thay đổi';
+
+    if (res.ok) {
+        showToast('success', 'Cập nhật hồ sơ thành công!');
+        localStorage.setItem('ho_ten', body.hoTen);
+        await loadProfile();
+    } else {
+        const err = await res.json().catch(() => ({}));
+        showToast('danger', err.message || 'Cập nhật thất bại');
+    }
+});
+
+document.getElementById('formGioiThieu').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('[type=submit]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang lưu...';
+
+    // Merge giới thiệu with current profile data
+    const body = {
+        hoTen: profileData?.hoTen || document.getElementById('inpHoTen').value,
+        soDienThoai: profileData?.soDienThoai || '',
+        chuyenNganh: profileData?.chuyenNganh || '',
+        bangCap: profileData?.bangCap || '',
+        namKinhNghiem: profileData?.namKinhNghiem ?? 0,
+        gioiThieu: document.getElementById('inpGioiThieu').value.trim()
+    };
+
+    const res = await saveGVProfile(body);
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Lưu giới thiệu';
+
+    if (res.ok) {
+        showToast('success', 'Cập nhật giới thiệu thành công!');
+        await loadProfile();
+    } else {
+        const err = await res.json().catch(() => ({}));
+        showToast('danger', err.message || 'Cập nhật thất bại');
+    }
+});
+
+document.getElementById('formMatKhau').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const mkMoi = document.getElementById('inpMKMoi').value;
+    const mkXN = document.getElementById('inpMKXacNhan').value;
+    if (mkMoi !== mkXN) { showToast('warning', 'Mật khẩu xác nhận không khớp'); return; }
+
+    const btn = e.target.querySelector('[type=submit]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang xử lý...';
+
+    const res = await apiCall('/api/auth/doi-mat-khau', {
+        method: 'POST',
+        body: { matKhauCu: document.getElementById('inpMKCu').value, matKhauMoi: mkMoi }
+    });
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-shield-check me-1"></i>Đổi mật khẩu';
+
+    const d = await res.json().catch(() => ({}));
+    if (res.ok) {
+        showToast('success', 'Đổi mật khẩu thành công!');
+        e.target.reset();
+    } else {
+        showToast('danger', d.message || 'Đổi mật khẩu thất bại');
+    }
+});
+
+function togglePwd(id, btn) {
+    const inp = document.getElementById(id);
+    const isText = inp.type === 'text';
+    inp.type = isText ? 'password' : 'text';
+    btn.innerHTML = isText ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+}
+
+// ─── Avatar upload ───────────────────────────────────────────
+function moUploadAvatarGV() {
+    document.getElementById('gvAvatarPreview').src = profileData?.anhDaiDien || '';
+    document.getElementById('gvAvatarPreview').classList.toggle('d-none', !profileData?.anhDaiDien);
+    document.getElementById('gvAvatarPlaceholder').classList.toggle('d-none', !!profileData?.anhDaiDien);
+    document.getElementById('gvFileInput').value = '';
+    new bootstrap.Modal(document.getElementById('modalUploadAvatarGV')).show();
+}
+
+function gvPreviewAvatar() {
+    const file = document.getElementById('gvFileInput').files[0];
+    if (!file) return;
+    const allowed = ['image/jpeg','image/png','image/gif','image/webp'];
+    if (!allowed.includes(file.type)) { showToast('warning','Chỉ hỗ trợ JPG, PNG, GIF, WEBP'); return; }
+    if (file.size > 5*1024*1024) { showToast('warning','Ảnh không được vượt quá 5MB'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        document.getElementById('gvAvatarPreview').src = e.target.result;
+        document.getElementById('gvAvatarPreview').classList.remove('d-none');
+        document.getElementById('gvAvatarPlaceholder').classList.add('d-none');
+    };
+    reader.readAsDataURL(file);
+}
+
+async function gvUploadAvatar() {
+    const file = document.getElementById('gvFileInput').files[0];
+    if (!file) { showToast('warning','Vui lòng chọn ảnh'); return; }
+    const btn = document.getElementById('gvBtnUpload');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Đang tải...';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+        const res = await fetch('/api/upload/avatar', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('jwt_token') },
+            body: formData
+        });
+        const d = await res.json().catch(() => ({}));
+        if (res.ok) {
+            showToast('success', 'Cập nhật ảnh đại diện thành công!');
+            if (d.anhDaiDien) localStorage.setItem('anh_dai_dien', d.anhDaiDien);
+            bootstrap.Modal.getInstance(document.getElementById('modalUploadAvatarGV')).hide();
+            await loadProfile();
+        } else {
+            showToast('danger', d.message || 'Tải ảnh thất bại');
+        }
+    } catch { showToast('danger','Lỗi kết nối'); }
+    finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-cloud-upload me-1"></i>Tải lên';
+    }
+}
+</script>
+
+<!-- Modal upload avatar -->
+<div class="modal fade" id="modalUploadAvatarGV" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold"><i class="bi bi-camera me-2"></i>Đổi ảnh đại diện</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="gvAvatarPlaceholder" class="gv-avatar mx-auto mb-3" style="width:80px;height:80px;font-size:2rem">?</div>
+                <img id="gvAvatarPreview" src="" class="rounded-circle d-none mb-3" style="width:80px;height:80px;object-fit:cover" alt="preview">
+                <div class="mb-3">
+                    <input type="file" id="gvFileInput" class="form-control form-control-sm" accept="image/jpeg,image/png,image/gif,image/webp" onchange="gvPreviewAvatar()">
+                    <small class="text-muted">JPG, PNG, GIF, WEBP – tối đa 5MB</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Hủy</button>
+                <button id="gvBtnUpload" class="btn btn-primary btn-sm" onclick="gvUploadAvatar()">
+                    <i class="bi bi-cloud-upload me-1"></i>Tải lên
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
