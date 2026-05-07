@@ -8,9 +8,24 @@ using QuanLyKhoaHoc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Database
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// ─── PORT (Railway sets $PORT automatically) ───────────────────────
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://+:{port}");
+
+// ─── DATABASE ───────────────────────────────────────────────────────
+// Railway cung cấp DATABASE_URL (PostgreSQL). Dev dùng SQL Server.
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (!string.IsNullOrEmpty(databaseUrl))
+{
+    // Railway PostgreSQL: postgres://user:pass@host:port/db
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(databaseUrl));
+}
+else
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
 
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -116,11 +131,20 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    // Use Migrate() for relational DBs (SQL Server), EnsureCreated() for InMemory (tests)
     if (db.Database.IsRelational())
-        db.Database.Migrate();
+    {
+        // PostgreSQL (Railway): dùng EnsureCreated vì migrations viết cho SQL Server
+        // SQL Server (dev): dùng Migrate() để apply đúng migration
+        var isPostgres = db.Database.ProviderName?.Contains("Npgsql") == true;
+        if (isPostgres)
+            db.Database.EnsureCreated();
+        else
+            db.Database.Migrate();
+    }
     else
-        db.Database.EnsureCreated();
+    {
+        db.Database.EnsureCreated(); // InMemory (tests)
+    }
     SeedData.Initialize(db);
 }
 
@@ -131,7 +155,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
-app.UseHttpsRedirection();
+
+// Tắt HTTPS redirect trên Railway (Railway tự xử lý TLS ở proxy layer)
+if (app.Environment.IsDevelopment())
+    app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSwagger();
 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Quản Lý Khóa Học API v1"));
